@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: buddy-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: buddy_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d buddy_ai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: buddy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: chromadb/chroma:0.4.22
+    container_name: buddy-chromadb
+    ports:
+      - "8001:8000"
+    environment:
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - chromadb_data:/chroma/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama AI Models (Local)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: buddy-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+    # Uncomment to enable GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # FastAPI Backend (optional: build from Dockerfile)
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: docker/Dockerfile.dev
+  #   container_name: buddy-backend
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     DATABASE_URL: postgresql://user:password@postgres:5432/buddy_ai
+  #     REDIS_URL: redis://redis:6379/0
+  #     OLLAMA_BASE_URL: http://ollama:11434
+  #     DEBUG: "true"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./backend:/app
+  #   command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend (optional: build from npm)
+  # frontend:
+  #   build:
+  #     context: ./frontend-web
+  #     dockerfile: Dockerfile
+  #   container_name: buddy-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     VITE_API_URL: http://localhost:8000
+  #   depends_on:
+  #     - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  chromadb_data:
+  ollama_data:
+
+networks:
+  default:
+    name: buddy-network
