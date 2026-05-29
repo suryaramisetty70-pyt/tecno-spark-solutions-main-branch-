@@ -251,7 +251,7 @@ class Memory(Base):
     embedding = Column(JSON)  # Vector embedding (stored in ChromaDB, reference here)
     memory_type = Column(String(50), nullable=False)  # conversation, note, document, fact
     tags = Column(JSON, default=[])
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -286,7 +286,7 @@ class ConversationMessage(Base):
     agent_id = Column(String(100))  # If sender is agent
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
-    metadata = Column(JSON, default={})
+    meta_data = Column(JSON, default={})
 
     thread = relationship("ConversationThread", back_populates="messages")
 
@@ -945,7 +945,7 @@ class Contact(Base):
     email = Column(String(255))
     phone = Column(String(20))
     company = Column(String(255))
-    relationship = Column(String(50))  # client, supplier, partner, colleague
+    relationship_type = Column(String(50))  # client, supplier, partner, colleague
     created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="contacts")
