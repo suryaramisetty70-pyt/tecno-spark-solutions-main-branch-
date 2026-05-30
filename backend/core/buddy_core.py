@@ -9,6 +9,11 @@ from dataclasses import dataclass
 from datetime import datetime
 import asyncio
 
+from core.intent_router import IntentRouter, IntentCategory
+from core.event_bus import EventBus, EventType
+from core.memory_engine import MemoryEngine, MemoryType
+from core.workflow_engine import WorkflowEngine
+from core.model_router import ModelRouter
 
 logger = logging.getLogger(__name__)
 
@@ -32,22 +37,34 @@ class BuddyCore:
 
     def __init__(self):
         """Initialize Buddy Core"""
-        self.agents: Dict[str, Any] = {}  # Registered agents
-        self.memory_store = None  # Will connect to PostgreSQL + Redis + ChromaDB
-        self.event_bus = None  # Will connect to Redis pub/sub
-        self.workflow_engine = None
-        self.model_router = None
         self.logger = logging.getLogger(__name__)
-        self.logger.info("🧠 Buddy Core initialized")
+
+        # Core agents registry
+        self.agents: Dict[str, Any] = {}
+
+        # Core engines
+        self.intent_router = IntentRouter()
+        self.memory_engine = MemoryEngine()
+        self.event_bus = EventBus()
+        self.workflow_engine = WorkflowEngine()
+        self.model_router = ModelRouter()
+
+        self.logger.info("🧠 Buddy Core initialized with all components")
 
     async def initialize(self) -> None:
         """Initialize all core components"""
         self.logger.info("Initializing Buddy Core components...")
-        # TODO: Initialize memory store
-        # TODO: Initialize event bus
-        # TODO: Initialize workflow engine
-        # TODO: Initialize model router
-        self.logger.info("✅ All components initialized")
+
+        # All components are initialized in __init__
+        # This method is for async initialization if needed in the future
+
+        self.logger.info("✅ All Buddy Core components ready")
+        self.logger.info(f"📊 Status:")
+        self.logger.info(f"   - Intent Router: {self.intent_router.get_router_stats()}")
+        self.logger.info(f"   - Memory Engine: {self.memory_engine.get_memory_stats()}")
+        self.logger.info(f"   - Event Bus: {self.event_bus.get_bus_stats()}")
+        self.logger.info(f"   - Workflow Engine: {self.workflow_engine.get_workflow_stats()}")
+        self.logger.info(f"   - Model Router: Available models {len(self.model_router.local_models)} local + {len(self.model_router.cloud_models)} cloud")
 
     def register_agent(self, agent_id: str, agent: Any) -> None:
         """
@@ -58,6 +75,17 @@ class BuddyCore:
             agent: Agent instance
         """
         self.agents[agent_id] = agent
+
+        # Register agent capabilities with intent router
+        if hasattr(agent, "capabilities"):
+            for capability in agent.capabilities:
+                self.intent_router.add_agent_capability(
+                    agent_id=agent_id,
+                    category=capability.get("category"),
+                    skills=capability.get("skills", []),
+                    priority=capability.get("priority", 5)
+                )
+
         self.logger.info(f"✅ Agent registered: {agent.name} ({agent_id})")
 
     def get_agent(self, agent_id: str) -> Optional[Any]:
@@ -98,38 +126,113 @@ class BuddyCore:
         try:
             self.logger.info(f"🎯 Routing intent: {intent[:50]}...")
 
-            # TODO: Implement intent classification
-            # This will use NLP to classify the intent
+            # Publish intent received event
+            await self.event_bus.publish(
+                EventType.INTENT_RECEIVED,
+                source_agent="buddy_core",
+                data={"user_id": user_id, "intent": intent}
+            )
 
-            # TODO: Select appropriate agent
-            # Based on intent classification, select which agent should handle it
+            # Classify intent
+            category, confidence = await self.intent_router.classify_intent(
+                intent,
+                context
+            )
 
-            # TODO: Enhance context with memory
-            # Add relevant user and agent memory to context
+            self.logger.info(f"📊 Intent classified: {category.value} (confidence: {confidence:.2f})")
 
-            # TODO: Execute agent
-            # Call the selected agent with intent and context
+            # Select appropriate agents
+            agents = await self.intent_router.select_agents(category, context)
+
+            if not agents:
+                self.logger.warning(f"No agents available for category: {category.value}")
+                processing_time = (datetime.now() - start_time).total_seconds()
+                return ProcessingResult(
+                    agent_id="buddy_core",
+                    status="no_agents",
+                    response={"message": "No agents available for this request"},
+                    timestamp=datetime.now(),
+                    processing_time=processing_time,
+                    confidence=0.0
+                )
+
+            # Get primary agent
+            primary_agent_id = agents[0][0]
+            primary_agent = self.agents.get(primary_agent_id)
+
+            if not primary_agent:
+                self.logger.error(f"Agent not registered: {primary_agent_id}")
+                processing_time = (datetime.now() - start_time).total_seconds()
+                return ProcessingResult(
+                    agent_id="buddy_core",
+                    status="agent_not_found",
+                    response={"message": f"Agent {primary_agent_id} not registered"},
+                    timestamp=datetime.now(),
+                    processing_time=processing_time,
+                    confidence=0.0
+                )
+
+            # Retrieve relevant memory for context
+            memories = await self.memory_engine.retrieve_memory(
+                user_id=user_id,
+                query=intent,
+                top_k=3
+            )
+
+            # Enhance context with memory
+            enhanced_context = {
+                **context,
+                "memories": memories,
+                "user_id": user_id,
+                "intent_category": category.value,
+                "confidence": confidence
+            }
+
+            # Execute agent
+            self.logger.info(f"🤖 Executing agent: {primary_agent.name}")
+            agent_result = await primary_agent(intent, enhanced_context)
+
+            # Save to memory
+            await self.memory_engine.save_memory(
+                user_id=user_id,
+                memory_type=MemoryType.CONVERSATION,
+                content=f"User: {intent}\nAgent Response: {str(agent_result)}",
+                metadata={"agent_id": primary_agent_id, "category": category.value},
+                tags=[category.value, primary_agent_id]
+            )
+
+            # Publish intent processed event
+            await self.event_bus.publish(
+                EventType.INTENT_PROCESSED,
+                source_agent="buddy_core",
+                data={"user_id": user_id, "agent_id": primary_agent_id, "status": "success"}
+            )
 
             processing_time = (datetime.now() - start_time).total_seconds()
 
             result = ProcessingResult(
-                agent_id="personal_assistant",  # Placeholder
+                agent_id=primary_agent_id,
                 status="success",
-                response={
-                    "message": "Received intent",
-                    "intent": intent,
-                    "processing_time": processing_time
-                },
+                response=agent_result,
                 timestamp=datetime.now(),
-                processing_time=processing_time
+                processing_time=processing_time,
+                confidence=confidence
             )
 
-            self.logger.info(f"✅ Intent processed in {processing_time:.2f}s")
+            self.logger.info(f"✅ Intent processed in {processing_time:.2f}s by {primary_agent.name}")
             return result
 
         except Exception as e:
             self.logger.error(f"❌ Error routing intent: {e}", exc_info=True)
-            raise
+            processing_time = (datetime.now() - start_time).total_seconds()
+            return ProcessingResult(
+                agent_id="buddy_core",
+                status="error",
+                response={"error": str(e)},
+                timestamp=datetime.now(),
+                processing_time=processing_time,
+                confidence=0.0
+            )
 
     async def save_memory(
         self,
@@ -151,8 +254,28 @@ class BuddyCore:
             Memory ID
         """
         self.logger.info(f"💾 Saving memory: {memory_type}")
-        # TODO: Store in PostgreSQL + embeddings in ChromaDB
-        return "memory_id"  # Placeholder
+
+        # Convert string memory type to enum
+        try:
+            mem_type = MemoryType[memory_type.upper()]
+        except KeyError:
+            mem_type = MemoryType.CUSTOM
+
+        memory_id = await self.memory_engine.save_memory(
+            user_id=user_id,
+            memory_type=mem_type,
+            content=content,
+            metadata=metadata or {}
+        )
+
+        # Publish memory saved event
+        await self.event_bus.publish(
+            EventType.MEMORY_SAVED,
+            source_agent="buddy_core",
+            data={"user_id": user_id, "memory_id": memory_id, "type": memory_type}
+        )
+
+        return memory_id
 
     async def retrieve_memory(
         self,
@@ -176,8 +299,30 @@ class BuddyCore:
             List of relevant memories
         """
         self.logger.info(f"🔍 Retrieving memories for: {query[:50]}...")
-        # TODO: Query ChromaDB for semantic search
-        return []  # Placeholder
+
+        # Convert string memory type to enum if provided
+        mem_type = None
+        if memory_type:
+            try:
+                mem_type = MemoryType[memory_type.upper()]
+            except KeyError:
+                pass
+
+        memories = await self.memory_engine.retrieve_memory(
+            user_id=user_id,
+            query=query,
+            memory_type=mem_type,
+            top_k=top_k
+        )
+
+        # Publish memory retrieved event
+        await self.event_bus.publish(
+            EventType.MEMORY_RETRIEVED,
+            source_agent="buddy_core",
+            data={"user_id": user_id, "query": query, "results": len(memories)}
+        )
+
+        return memories
 
     async def execute_workflow(
         self,
@@ -197,10 +342,56 @@ class BuddyCore:
             Workflow execution result
         """
         self.logger.info(f"⚙️ Executing workflow: {workflow_id}")
-        # TODO: Load workflow definition
-        # TODO: Execute each step, passing results to next step
-        # TODO: Handle errors and retries
-        return {"status": "success", "workflow_id": workflow_id}  # Placeholder
+
+        # Publish workflow started event
+        await self.event_bus.publish(
+            EventType.WORKFLOW_STARTED,
+            source_agent="buddy_core",
+            data={"user_id": user_id, "workflow_id": workflow_id}
+        )
+
+        # Execute workflow
+        execution_id = await self.workflow_engine.execute_workflow(
+            workflow_id=workflow_id,
+            user_id=user_id,
+            trigger_data=trigger_data or {},
+            agent_callable=self._call_agent
+        )
+
+        # Get execution status
+        execution_status = await self.workflow_engine.get_workflow_status(execution_id)
+
+        if execution_status.get("status") == "completed":
+            await self.event_bus.publish(
+                EventType.WORKFLOW_COMPLETED,
+                source_agent="buddy_core",
+                data={"workflow_id": workflow_id, "execution_id": execution_id}
+            )
+        else:
+            await self.event_bus.publish(
+                EventType.WORKFLOW_FAILED,
+                source_agent="buddy_core",
+                data={"workflow_id": workflow_id, "execution_id": execution_id}
+            )
+
+        return execution_status
+
+    async def _call_agent(
+        self,
+        agent_id: str,
+        action: str,
+        parameters: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Call an agent to execute an action"""
+        agent = self.agents.get(agent_id)
+        if not agent:
+            return {"error": f"Agent {agent_id} not registered"}
+
+        try:
+            return await agent.execute_action(action, parameters)
+        except Exception as e:
+            self.logger.error(f"Error calling agent {agent_id}: {e}")
+            return {"error": str(e)}
 
     async def select_model(
         self,
@@ -221,12 +412,22 @@ class BuddyCore:
         Returns:
             Model configuration
         """
-        # TODO: Implement intelligent model selection
-        return {
-            "model": "mistral",
-            "type": "local",
-            "provider": "ollama"
-        }  # Placeholder
+        self.logger.info(f"🤖 Selecting model for task: {task_type}")
+
+        model_config = await self.model_router.route(
+            task_type=task_type,
+            task_description="",
+            user_hardware=user_hardware,
+            privacy_required=user_hardware.get("privacy_required", False),
+            speed_required=user_hardware.get("speed_required", False)
+        )
+
+        self.logger.info(
+            f"✅ Model selected: {model_config.get('model_name')} "
+            f"({model_config.get('provider')})"
+        )
+
+        return model_config
 
     async def coordinate_agents(
         self,
@@ -244,14 +445,42 @@ class BuddyCore:
             Coordination result
         """
         self.logger.info(f"🤝 Coordinating {len(agents)} agents")
-        # TODO: Implement multi-agent coordination logic
-        return {"status": "success", "agents": agents}  # Placeholder
+
+        results = []
+
+        for agent_id in agents:
+            agent = self.agents.get(agent_id)
+            if agent:
+                try:
+                    result = await agent(
+                        shared_context.get("intent", ""),
+                        shared_context
+                    )
+                    results.append({
+                        "agent_id": agent_id,
+                        "status": "success",
+                        "result": result
+                    })
+                except Exception as e:
+                    results.append({
+                        "agent_id": agent_id,
+                        "status": "error",
+                        "error": str(e)
+                    })
+
+        self.logger.info(f"✅ Coordination complete: {len(agents)} agents")
+        return {"agents": agents, "results": results}
 
     def get_metrics(self) -> Dict[str, Any]:
         """Get system metrics"""
         return {
             "agents_registered": len(self.agents),
-            "memory_items": 0,  # TODO: Get from memory store
-            "uptime": "TODO",
-            "processed_intents": 0  # TODO: Track
+            "memory": self.memory_engine.get_memory_stats(),
+            "event_bus": self.event_bus.get_bus_stats(),
+            "workflows": self.workflow_engine.get_workflow_stats(),
+            "models_available": {
+                "local": len(self.model_router.local_models),
+                "cloud": len(self.model_router.cloud_models)
+            },
+            "router_stats": self.intent_router.get_router_stats()
         }
