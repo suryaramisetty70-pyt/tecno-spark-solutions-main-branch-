@@ -1,0 +1,58 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Buddy AI OS",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 400,
+        "minHeight": 300,
+        "resizable": true,
+        "fullscreen": false,
+        "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png"],
+        "hiddenTitle": false,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "identifier": "com.tecnospark.buddyai",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns"],
+    "nsis": {
+      "installerIcon": "icons/icon.ico",
+      "headerImage": "icons/header.bmp",
+      "leftSidebarImage": "icons/sidebar.bmp",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutLanguage": 1033
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "11",
+      "useBootstrapper": true,
+      "activeMMCategory": "public.app-category.productivity",
+      "signingIdentity": null,
+      "provisioningProfile": null,
+      "entitlements": null,
+      "exceptionDomain": ""
+    },
+    "linux": {
+      "deb": {
+        "depends": []
+      }
+    }
+  }
+}

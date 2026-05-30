@@ -1,0 +1,22 @@
+[package]
+name = "buddy-ai-desktop"
+version = "0.1.0"
+description = "Buddy AI Operating System - Desktop Application"
+authors = ["Tecno Spark Solutions"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.60"
+
+[build-dependencies]
+tauri-build = { version = "1.4", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.4", features = ["shell-open", "system-tray", "window-all"] }
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
