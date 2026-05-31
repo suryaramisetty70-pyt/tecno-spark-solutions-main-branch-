@@ -15,7 +15,7 @@ from api.schemas.user_schemas import (
     DeleteAccountResponse, UserActivityResponse, ErrorResponse, ChangeEmailRequest
 )
 from services.user_service import UserService
-from db.models import User, UserProfile, UserPreferences, UserGoal
+from db.models import User, UserProfile, UserPreference, UserGoal
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/users", tags=["users"])

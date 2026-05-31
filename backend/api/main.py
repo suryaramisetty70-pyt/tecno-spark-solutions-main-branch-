@@ -109,16 +109,19 @@ def create_app() -> FastAPI:
     return app
 
 
-# Create FastAPI application with lifespan
-app = create_app()
-
 if __name__ == "__main__":
     import uvicorn
 
+    # Create app only when running directly
+    app = create_app()
+
     uvicorn.run(
-        "main:app",
+        "api.main:app",
         host=settings.HOST,
         port=settings.PORT,
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower()
     )
+else:
+    # Create app when imported as a module
+    app = create_app()

@@ -231,7 +231,7 @@ class WorkflowService:
             db.add(trigger)
             await db.commit()
             await db.refresh(trigger)
-            logger.info(f"Trigger created: id={trigger.id}, workflow_id={trigger_data.workflow_id}")
+            logger.info(f"WorkflowTrigger created: id={trigger.id}, workflow_id={trigger_data.workflow_id}")
             return trigger
 
         except Exception as e:

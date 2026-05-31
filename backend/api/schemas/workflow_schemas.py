@@ -28,7 +28,7 @@ class ExecutionStatus(str, Enum):
 
 
 class TriggerType(str, Enum):
-    """Trigger type enum"""
+    """WorkflowTrigger type enum"""
     MANUAL = "manual"
     SCHEDULED = "scheduled"
     EVENT = "event"
@@ -128,7 +128,7 @@ class TriggerCreateRequest(BaseModel):
 
 
 class TriggerResponse(BaseModel):
-    """Trigger response"""
+    """WorkflowTrigger response"""
     id: int
     workflow_id: int
     trigger_type: TriggerType

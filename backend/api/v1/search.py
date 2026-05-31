@@ -14,7 +14,7 @@ from api.schemas.search_schemas import (
     SearchAnalyticsResponse
 )
 from services.search_service import SearchService
-from api.auth import get_current_user
+from api.dependencies.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/search", tags=["search"])
 

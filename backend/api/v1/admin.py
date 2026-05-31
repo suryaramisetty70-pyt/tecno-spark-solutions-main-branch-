@@ -12,7 +12,7 @@ from api.schemas.admin_schemas import (
     AdminDashboardResponse, UserManagementRequest, SystemConfigRequest, AuditLogResponse
 )
 from services.admin_service import AdminService
-from api.auth import get_current_user
+from api.dependencies.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 

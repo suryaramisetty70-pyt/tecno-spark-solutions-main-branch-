@@ -3,7 +3,8 @@ Database configuration and setup for Buddy AI OS
 """
 
 from typing import AsyncGenerator
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 import logging
@@ -20,7 +21,6 @@ DATABASE_URL = os.getenv(
 # Engine kwargs - SQLite needs connect_args
 engine_kwargs = {
     "echo": os.getenv("SQL_ECHO", "false").lower() == "true",
-    "future": True,
 }
 
 # Add SQLite specific configuration
@@ -33,8 +33,8 @@ elif os.getenv("ENV") == "test":
 # For async operations
 engine = create_async_engine(DATABASE_URL, **engine_kwargs)
 
-# Create async session maker
-async_session_maker = async_sessionmaker(
+# Create async session maker (SQLAlchemy 1.4 compatible)
+async_session_maker = sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
@@ -57,21 +57,21 @@ sync_engine = create_engine(
     connect_args={"check_same_thread": False} if "sqlite" in SYNC_DATABASE_URL else {}
 )
 
-sync_session_maker = async_sessionmaker(sync_engine, expire_on_commit=False)
+sync_session_maker = sessionmaker(sync_engine, expire_on_commit=False)
 
 
 async def init_db() -> None:
     """Initialize database and create all tables"""
     try:
         logger.info("Initializing database...")
-        from db.models import Base
+        from backend.db.models import Base
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-        logger.info("✅ Database initialized successfully")
+        logger.info("Database initialized successfully")
     except Exception as e:
-        logger.error(f"❌ Database initialization failed: {e}")
+        logger.error(f"Database initialization failed: {e}")
         raise
 
 
@@ -87,5 +87,14 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 async def close_db() -> None:
     """Close database connection"""
     await engine.dispose()
-    logger.info("✅ Database connection closed")
+    logger.info("Database connection closed")
 
+
+
+async def get_db():
+    """Get database session"""
+    async with async_session_maker() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

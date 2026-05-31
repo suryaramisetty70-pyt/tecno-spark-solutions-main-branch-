@@ -12,7 +12,7 @@ from api.schemas.notification_schemas import (
     NotificationStatsResponse, BulkNotificationRequest, BulkNotificationResponse
 )
 from services.notification_service import NotificationService
-from api.auth import get_current_user
+from api.dependencies.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/notifications", tags=["notifications"])
 

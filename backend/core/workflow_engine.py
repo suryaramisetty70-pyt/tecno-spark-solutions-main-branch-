@@ -213,7 +213,7 @@ class WorkflowEngine:
         Args:
             workflow_id: Workflow ID
             trigger_type: Type of trigger (time, event, manual)
-            condition: Trigger condition
+            condition: WorkflowTrigger condition
 
         Returns:
             True if added successfully
@@ -229,7 +229,7 @@ class WorkflowEngine:
         }
 
         workflow.triggers.append(trigger)
-        self.logger.info(f"Trigger added to workflow: {workflow_id}")
+        self.logger.info(f"WorkflowTrigger added to workflow: {workflow_id}")
 
         return True
 

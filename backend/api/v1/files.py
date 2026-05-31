@@ -11,7 +11,7 @@ from api.schemas.file_schemas import (
     FileSearchRequest, FileMetadataResponse
 )
 from services.file_service import FileService
-from api.auth import get_current_user
+from api.dependencies.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/files", tags=["files"])
 

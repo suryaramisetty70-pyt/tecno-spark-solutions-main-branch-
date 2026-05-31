@@ -13,7 +13,7 @@ from api.schemas.analytics_schemas import (
     ReportRequest, ReportResponse, HealthMetricsResponse
 )
 from services.analytics_service import AnalyticsService
-from api.auth import get_current_user
+from api.dependencies.auth_dependencies import get_current_user
 
 router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
 

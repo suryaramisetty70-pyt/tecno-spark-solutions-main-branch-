@@ -199,6 +199,7 @@ class Agent(Base):
 
     registrations = relationship("AgentRegistration", back_populates="agent")
     instances = relationship("AgentInstance", back_populates="agent")
+    tools = relationship("AgentTool", back_populates="agent")
 
 
 class AgentInstance(Base):
@@ -318,6 +319,8 @@ class Integration(Base):
 
     user = relationship("User", back_populates="integrations")
     connection_logs = relationship("ConnectionLog", back_populates="integration")
+    credentials = relationship("IntegrationCredential", back_populates="integration")
+    webhook_logs = relationship("WebhookLog", back_populates="integration")
 
     __table_args__ = (
         Index('idx_user_service', 'user_id', 'service'),
@@ -355,7 +358,7 @@ class Workflow(Base):
 
     user = relationship("User", back_populates="workflows")
     steps = relationship("WorkflowStep", back_populates="workflow")
-    triggers = relationship("Trigger", back_populates="workflow")
+    triggers = relationship("WorkflowTrigger", back_populates="workflow")
     executions = relationship("WorkflowExecution", back_populates="workflow")
 
 
@@ -374,7 +377,7 @@ class WorkflowStep(Base):
     workflow = relationship("Workflow", back_populates="steps")
 
 
-class Trigger(Base):
+class WorkflowTrigger(Base):
     """Workflow triggers"""
     __tablename__ = "triggers"
 
@@ -997,3 +1000,116 @@ class TeamMember(Base):
     joined_date = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="team_members")
+
+
+class AgentTool(Base):
+    """Tools available for agents"""
+    __tablename__ = "agent_tools"
+
+    id = Column(Integer, primary_key=True)
+    agent_id = Column(Integer, ForeignKey("agents.id"), nullable=False)
+    name = Column(String(255), nullable=False)
+    description = Column(Text)
+    input_schema = Column(JSON)
+    output_schema = Column(JSON)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    agent = relationship("Agent", back_populates="tools")
+
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    workflow = relationship("Workflow", back_populates="triggers")
+
+
+class StepExecution(Base):
+    """Execution records for workflow steps"""
+    __tablename__ = "step_executions"
+
+    id = Column(Integer, primary_key=True)
+    workflow_execution_id = Column(Integer, ForeignKey("workflow_executions.id"), nullable=False)
+    step_order = Column(Integer, nullable=False)
+    status = Column(String(50), default="pending")  # pending, running, completed, failed
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
+    error_message = Column(Text)
+
+    execution = relationship("WorkflowExecution", back_populates="step_executions")
+
+
+class IntegrationCredential(Base):
+    """Credentials for integrations"""
+    __tablename__ = "integration_credentials"
+
+    id = Column(Integer, primary_key=True)
+    integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
+    credential_key = Column(String(255), nullable=False)
+    credential_value_encrypted = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    integration = relationship("Integration", back_populates="credentials")
+
+
+
+
+class WebhookLog(Base):
+    """Webhook event logs"""
+    __tablename__ = "webhook_logs"
+
+    id = Column(Integer, primary_key=True)
+    integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
+    event_type = Column(String(100), nullable=False)
+    payload = Column(JSON)
+    received_at = Column(DateTime, default=datetime.utcnow)
+
+    integration = relationship("Integration", back_populates="webhook_logs")
+
+
+
+
+class IntegrationMetric(Base):
+    """Metrics for integrations"""
+    __tablename__ = "integration_metrics"
+
+    id = Column(Integer, primary_key=True)
+    integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
+    metric_name = Column(String(100), nullable=False)
+    metric_value = Column(Float)
+    recorded_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AdminAction(Base):
+    """Admin action audit log"""
+    __tablename__ = "admin_actions"
+
+    id = Column(Integer, primary_key=True)
+    admin_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    action_type = Column(String(50), nullable=False)
+    target_type = Column(String(50))
+    target_id = Column(Integer)
+    details = Column(JSON)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    admin_user = relationship("User", foreign_keys=[admin_user_id])
+
+
+class SystemConfig(Base):
+    """System configuration"""
+    __tablename__ = "system_config"
+
+    id = Column(Integer, primary_key=True)
+    config_key = Column(String(100), unique=True, nullable=False)
+    config_value = Column(Text)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SystemHealth(Base):
+    """System health metrics"""
+    __tablename__ = "system_health"
+
+    id = Column(Integer, primary_key=True)
+    metric_name = Column(String(100), nullable=False)
+    metric_value = Column(Float)
+    status = Column(String(50))
+    recorded_at = Column(DateTime, default=datetime.utcnow)

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from typing import Optional, List
 import logging
 
-from db.models import User, UserProfile, UserPreferences, UserGoal
+from db.models import User, UserProfile, UserPreference, UserGoal
 from api.schemas.user_schemas import (
     UserProfileRequest, UserPreferenceRequest, CreateGoalRequest,
     UpdateGoalRequest, GoalStatus, AccountDeactivateRequest, DeleteAccountRequest
@@ -83,16 +83,16 @@ class UserService:
             raise
 
     @staticmethod
-    async def get_user_preferences(db: AsyncSession, user_id: int) -> Optional[UserPreferences]:
+    async def get_user_preferences(db: AsyncSession, user_id: int) -> Optional[UserPreference]:
         """Get user preferences"""
         try:
             result = await db.execute(
-                select(UserPreferences).where(UserPreferences.user_id == user_id)
+                select(UserPreference).where(UserPreference.user_id == user_id)
             )
             prefs = result.scalars().first()
 
             if not prefs:
-                prefs = UserPreferences(user_id=user_id)
+                prefs = UserPreference(user_id=user_id)
                 db.add(prefs)
                 await db.commit()
                 await db.refresh(prefs)
@@ -105,7 +105,7 @@ class UserService:
     @staticmethod
     async def update_user_preferences(
         db: AsyncSession, user_id: int, pref_data: UserPreferenceRequest
-    ) -> UserPreferences:
+    ) -> UserPreference:
         """Update user preferences"""
         try:
             prefs = await UserService.get_user_preferences(db, user_id)
