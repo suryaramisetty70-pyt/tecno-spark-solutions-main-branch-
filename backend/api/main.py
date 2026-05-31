@@ -93,9 +93,18 @@ def create_app() -> FastAPI:
             logger.error(f"Readiness check failed: {e}")
             return {"status": "not ready", "error": str(e)}, 503
 
-    # Include API routes (will add v1 routes after creating them)
-    # from api.v1 import router as api_router
-    # app.include_router(api_router, prefix="/api/v1")
+    # Include API routes
+    from api.v1 import auth, users, agents, workflows, integrations, notifications, admin, files, analytics, search
+    app.include_router(auth.router)
+    app.include_router(users.router)
+    app.include_router(agents.router)
+    app.include_router(workflows.router)
+    app.include_router(integrations.router)
+    app.include_router(notifications.router)
+    app.include_router(admin.router)
+    app.include_router(files.router)
+    app.include_router(analytics.router)
+    app.include_router(search.router)
 
     return app
 

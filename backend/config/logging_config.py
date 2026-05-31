@@ -20,10 +20,6 @@ def setup_logging(level: str = "INFO") -> None:
             },
             "detailed": {
                 "format": "%(asctime)s [%(levelname)s] %(name)s:%(filename)s:%(lineno)d: %(message)s"
-            },
-            "json": {
-                "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
             }
         },
         "handlers": {
@@ -32,20 +28,12 @@ def setup_logging(level: str = "INFO") -> None:
                 "level": level,
                 "formatter": "detailed",
                 "stream": "ext://sys.stdout"
-            },
-            "file": {
-                "class": "logging.handlers.RotatingFileHandler",
-                "level": level,
-                "formatter": "json",
-                "filename": "logs/buddy_ai.log",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 5
             }
         },
         "loggers": {
             "": {
                 "level": level,
-                "handlers": ["console", "file"],
+                "handlers": ["console"],
                 "propagate": True
             },
             "uvicorn.access": {

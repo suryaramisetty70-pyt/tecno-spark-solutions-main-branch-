@@ -14,16 +14,24 @@ logger = logging.getLogger(__name__)
 # Get database URL from environment
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://buddy_user:buddy_password@localhost/buddy_ai_db"
+    "sqlite+aiosqlite:///./buddy_ai.db"  # SQLite for Windows development
 )
 
+# Engine kwargs - SQLite needs connect_args
+engine_kwargs = {
+    "echo": os.getenv("SQL_ECHO", "false").lower() == "true",
+    "future": True,
+}
+
+# Add SQLite specific configuration
+if "sqlite" in DATABASE_URL:
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+    engine_kwargs["poolclass"] = NullPool
+elif os.getenv("ENV") == "test":
+    engine_kwargs["poolclass"] = NullPool
+
 # For async operations
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=os.getenv("SQL_ECHO", "false").lower() == "true",
-    future=True,
-    poolclass=NullPool if os.getenv("ENV") == "test" else None,
-)
+engine = create_async_engine(DATABASE_URL, **engine_kwargs)
 
 # Create async session maker
 async_session_maker = async_sessionmaker(
@@ -34,11 +42,19 @@ async_session_maker = async_sessionmaker(
 )
 
 # For synchronous operations (migrations)
-SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "") if "+asyncpg" in DATABASE_URL else DATABASE_URL
+# Convert async database URL to sync for Alembic
+if "sqlite" in DATABASE_URL:
+    SYNC_DATABASE_URL = DATABASE_URL.replace("+aiosqlite", "")
+elif "+asyncpg" in DATABASE_URL:
+    SYNC_DATABASE_URL = DATABASE_URL.replace("+asyncpg", "")
+else:
+    SYNC_DATABASE_URL = DATABASE_URL
+
 sync_engine = create_engine(
     SYNC_DATABASE_URL,
     echo=False,
     future=True,
+    connect_args={"check_same_thread": False} if "sqlite" in SYNC_DATABASE_URL else {}
 )
 
 sync_session_maker = async_sessionmaker(sync_engine, expire_on_commit=False)
