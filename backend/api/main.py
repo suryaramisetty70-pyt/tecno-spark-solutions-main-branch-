@@ -94,7 +94,7 @@ def create_app() -> FastAPI:
             return {"status": "not ready", "error": str(e)}, 503
 
     # Include API routes
-    from api.v1 import auth, users, agents, workflows, integrations, notifications, admin, files, analytics, search
+    from api.v1 import auth, users, agents, workflows, integrations, notifications, admin, files, analytics, search, marketplace
     app.include_router(auth.router)
     app.include_router(users.router)
     app.include_router(agents.router)
@@ -105,6 +105,7 @@ def create_app() -> FastAPI:
     app.include_router(files.router)
     app.include_router(analytics.router)
     app.include_router(search.router)
+    app.include_router(marketplace.router)
 
     return app
 
