@@ -1,0 +1,15 @@
+{
+  "name": "Royalty Manager",
+  "category": "Media",
+  "description": "Manages royalty payments",
+  "capabilities": [
+    "payment_tracking",
+    "calculation",
+    "reporting"
+  ],
+  "tools": [
+    "track_payments",
+    "calculate_royalties",
+    "generate_reports"
+  ]
+}

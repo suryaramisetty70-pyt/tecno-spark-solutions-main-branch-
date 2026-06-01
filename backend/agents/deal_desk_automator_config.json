@@ -1,0 +1,15 @@
+{
+  "name": "Deal Desk Automator",
+  "category": "Sales",
+  "description": "Automates deal desk processes and approvals",
+  "capabilities": [
+    "deal_automation",
+    "approval_workflow",
+    "contract_generation"
+  ],
+  "tools": [
+    "create_deal",
+    "route_approval",
+    "generate_contract"
+  ]
+}

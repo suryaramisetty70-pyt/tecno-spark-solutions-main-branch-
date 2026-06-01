@@ -1,0 +1,15 @@
+{
+  "name": "Trip Planner",
+  "category": "Travel",
+  "description": "Plans trips",
+  "capabilities": [
+    "itinerary_planning",
+    "budget_optimization",
+    "recommendation_engine"
+  ],
+  "tools": [
+    "create_itinerary",
+    "optimize_budget",
+    "recommend_activities"
+  ]
+}

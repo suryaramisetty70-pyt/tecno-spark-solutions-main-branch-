@@ -1,0 +1,15 @@
+{
+  "name": "Onboarding Coordinator",
+  "category": "HR",
+  "description": "Coordinates employee onboarding",
+  "capabilities": [
+    "onboarding_management",
+    "training_coordination",
+    "documentation"
+  ],
+  "tools": [
+    "create_onboarding_plan",
+    "assign_training",
+    "generate_docs"
+  ]
+}

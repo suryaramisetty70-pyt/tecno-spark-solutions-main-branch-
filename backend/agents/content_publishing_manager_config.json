@@ -1,0 +1,15 @@
+{
+  "name": "Content Publishing Manager",
+  "category": "Media",
+  "description": "Manages content publishing",
+  "capabilities": [
+    "publishing_workflow",
+    "distribution",
+    "analytics"
+  ],
+  "tools": [
+    "publish_content",
+    "distribute",
+    "track_analytics"
+  ]
+}

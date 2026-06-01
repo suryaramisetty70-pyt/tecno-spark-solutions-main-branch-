@@ -1,0 +1,15 @@
+{
+  "name": "Due Diligence Coordinator",
+  "category": "Legal",
+  "description": "Coordinates due diligence",
+  "capabilities": [
+    "document_collection",
+    "verification",
+    "reporting"
+  ],
+  "tools": [
+    "collect_documents",
+    "verify_info",
+    "generate_report"
+  ]
+}

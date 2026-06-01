@@ -1,0 +1,15 @@
+{
+  "name": "Grading Automation System",
+  "category": "Education",
+  "description": "Automates grading",
+  "capabilities": [
+    "automated_grading",
+    "analytics",
+    "reporting"
+  ],
+  "tools": [
+    "grade_assignments",
+    "analyze_scores",
+    "generate_reports"
+  ]
+}

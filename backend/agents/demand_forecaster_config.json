@@ -1,0 +1,15 @@
+{
+  "name": "Demand Forecaster",
+  "category": "Retail",
+  "description": "Forecasts demand",
+  "capabilities": [
+    "demand_prediction",
+    "seasonality_analysis",
+    "trend_detection"
+  ],
+  "tools": [
+    "predict_demand",
+    "analyze_seasonality",
+    "detect_trend"
+  ]
+}

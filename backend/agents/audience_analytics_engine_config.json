@@ -1,0 +1,15 @@
+{
+  "name": "Audience Analytics Engine",
+  "category": "Media",
+  "description": "Analyzes audience engagement",
+  "capabilities": [
+    "engagement_analysis",
+    "recommendation_generation",
+    "trend_detection"
+  ],
+  "tools": [
+    "analyze_engagement",
+    "generate_recommendations",
+    "detect_trends"
+  ]
+}

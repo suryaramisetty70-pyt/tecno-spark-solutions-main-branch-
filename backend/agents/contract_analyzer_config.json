@@ -1,0 +1,15 @@
+{
+  "name": "Contract Analyzer",
+  "category": "Legal",
+  "description": "Analyzes legal contracts",
+  "capabilities": [
+    "contract_analysis",
+    "risk_identification",
+    "compliance_checking"
+  ],
+  "tools": [
+    "analyze_contract",
+    "identify_risks",
+    "check_compliance"
+  ]
+}

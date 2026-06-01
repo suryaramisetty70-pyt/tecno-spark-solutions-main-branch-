@@ -1,0 +1,15 @@
+{
+  "name": "Smart Grid Optimizer",
+  "category": "Energy",
+  "description": "Optimizes smart grid operations",
+  "capabilities": [
+    "load_balancing",
+    "demand_forecasting",
+    "efficiency_optimization"
+  ],
+  "tools": [
+    "balance_load",
+    "forecast_demand",
+    "optimize_efficiency"
+  ]
+}

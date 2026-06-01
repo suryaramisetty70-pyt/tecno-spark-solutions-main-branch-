@@ -1,0 +1,15 @@
+{
+  "name": "Customer Bill Manager",
+  "category": "Energy",
+  "description": "Manages customer billing",
+  "capabilities": [
+    "billing_generation",
+    "error_detection",
+    "rate_management"
+  ],
+  "tools": [
+    "generate_bills",
+    "detect_errors",
+    "manage_rates"
+  ]
+}

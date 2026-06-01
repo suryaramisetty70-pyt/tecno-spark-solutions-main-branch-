@@ -1,0 +1,15 @@
+{
+  "name": "Staff Scheduler",
+  "category": "Retail",
+  "description": "Schedules staff",
+  "capabilities": [
+    "scheduling",
+    "labor_forecasting",
+    "shift_optimization"
+  ],
+  "tools": [
+    "create_schedule",
+    "forecast_labor",
+    "optimize_shifts"
+  ]
+}

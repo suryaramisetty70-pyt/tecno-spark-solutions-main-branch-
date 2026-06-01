@@ -1,0 +1,15 @@
+{
+  "name": "Patient Health Tracker",
+  "category": "Healthcare",
+  "description": "Tracks patient health",
+  "capabilities": [
+    "health_monitoring",
+    "medication_tracking",
+    "vital_signs"
+  ],
+  "tools": [
+    "monitor_health",
+    "track_medication",
+    "track_vitals"
+  ]
+}

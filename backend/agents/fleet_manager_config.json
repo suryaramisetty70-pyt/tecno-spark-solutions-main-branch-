@@ -1,0 +1,15 @@
+{
+  "name": "Fleet Manager",
+  "category": "Logistics",
+  "description": "Manages fleet operations",
+  "capabilities": [
+    "vehicle_tracking",
+    "maintenance_scheduling",
+    "performance_monitoring"
+  ],
+  "tools": [
+    "track_vehicle",
+    "schedule_maintenance",
+    "monitor_performance"
+  ]
+}

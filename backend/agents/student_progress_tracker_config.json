@@ -1,0 +1,15 @@
+{
+  "name": "Student Progress Tracker",
+  "category": "Education",
+  "description": "Tracks student progress",
+  "capabilities": [
+    "progress_monitoring",
+    "intervention_alerts",
+    "performance_analysis"
+  ],
+  "tools": [
+    "monitor_progress",
+    "send_alerts",
+    "analyze_performance"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Pricing Optimizer",
+  "category": "Retail",
+  "description": "Optimizes pricing",
+  "capabilities": [
+    "dynamic_pricing",
+    "margin_optimization",
+    "competitive_analysis"
+  ],
+  "tools": [
+    "set_dynamic_price",
+    "optimize_margin",
+    "analyze_competitors"
+  ]
+}

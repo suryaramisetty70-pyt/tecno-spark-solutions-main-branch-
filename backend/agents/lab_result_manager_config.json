@@ -1,0 +1,15 @@
+{
+  "name": "Lab Result Manager",
+  "category": "Healthcare",
+  "description": "Manages lab results",
+  "capabilities": [
+    "result_tracking",
+    "abnormality_detection",
+    "reporting"
+  ],
+  "tools": [
+    "track_results",
+    "detect_abnormality",
+    "generate_report"
+  ]
+}

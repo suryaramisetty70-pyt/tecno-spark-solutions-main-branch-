@@ -1,0 +1,15 @@
+{
+  "name": "Production Analytics Engine",
+  "category": "Manufacturing",
+  "description": "Analyzes production performance",
+  "capabilities": [
+    "oee_analysis",
+    "trend_detection",
+    "performance_metrics"
+  ],
+  "tools": [
+    "analyze_oee",
+    "detect_trend",
+    "calculate_metrics"
+  ]
+}

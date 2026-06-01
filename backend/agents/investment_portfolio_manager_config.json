@@ -1,0 +1,15 @@
+{
+  "name": "Investment Portfolio Manager",
+  "category": "Finance",
+  "description": "Manages investment portfolio and asset allocation",
+  "capabilities": [
+    "portfolio_tracking",
+    "asset_allocation",
+    "rebalancing"
+  ],
+  "tools": [
+    "add_investment",
+    "track_performance",
+    "suggest_rebalance"
+  ]
+}

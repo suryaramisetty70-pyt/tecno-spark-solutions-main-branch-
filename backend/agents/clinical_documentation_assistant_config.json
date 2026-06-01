@@ -1,0 +1,15 @@
+{
+  "name": "Clinical Documentation Assistant",
+  "category": "Healthcare",
+  "description": "Assists with clinical documentation",
+  "capabilities": [
+    "documentation",
+    "coding",
+    "compliance_tracking"
+  ],
+  "tools": [
+    "generate_documentation",
+    "code_procedure",
+    "track_compliance"
+  ]
+}

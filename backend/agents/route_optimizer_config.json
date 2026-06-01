@@ -1,0 +1,15 @@
+{
+  "name": "Route Optimizer",
+  "category": "Logistics",
+  "description": "Optimizes delivery routes",
+  "capabilities": [
+    "route_optimization",
+    "fuel_efficiency",
+    "time_optimization"
+  ],
+  "tools": [
+    "optimize_route",
+    "reduce_fuel",
+    "save_time"
+  ]
+}

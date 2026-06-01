@@ -1,0 +1,15 @@
+{
+  "name": "Personal Finance Manager",
+  "category": "Finance",
+  "description": "Manages personal finances, budgeting, and expense tracking",
+  "capabilities": [
+    "budget_tracking",
+    "expense_analysis",
+    "savings_planning"
+  ],
+  "tools": [
+    "track_expense",
+    "analyze_budget",
+    "set_goal"
+  ]
+}

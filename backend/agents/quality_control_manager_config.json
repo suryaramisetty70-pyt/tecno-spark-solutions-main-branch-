@@ -1,0 +1,15 @@
+{
+  "name": "Quality Control Manager",
+  "category": "Manufacturing",
+  "description": "Manages quality control",
+  "capabilities": [
+    "quality_monitoring",
+    "defect_detection",
+    "compliance_tracking"
+  ],
+  "tools": [
+    "monitor_quality",
+    "detect_defect",
+    "track_compliance"
+  ]
+}

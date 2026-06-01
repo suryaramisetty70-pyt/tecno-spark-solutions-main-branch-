@@ -1,0 +1,15 @@
+{
+  "name": "Data Quality Monitor",
+  "category": "AdvancedTech",
+  "description": "Monitors data quality",
+  "capabilities": [
+    "quality_checking",
+    "anomaly_detection",
+    "validation"
+  ],
+  "tools": [
+    "check_quality",
+    "detect_anomalies",
+    "validate_data"
+  ]
+}

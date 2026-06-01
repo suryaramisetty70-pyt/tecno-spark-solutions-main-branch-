@@ -1,0 +1,15 @@
+{
+  "name": "Property Maintenance Coordinator",
+  "category": "RealEstate",
+  "description": "Coordinates property maintenance",
+  "capabilities": [
+    "maintenance_scheduling",
+    "vendor_management",
+    "cost_tracking"
+  ],
+  "tools": [
+    "schedule_maintenance",
+    "manage_vendors",
+    "track_costs"
+  ]
+}

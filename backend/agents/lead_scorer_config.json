@@ -1,0 +1,15 @@
+{
+  "name": "Lead Scorer",
+  "category": "Sales",
+  "description": "Scores and prioritizes sales leads",
+  "capabilities": [
+    "lead_scoring",
+    "prioritization",
+    "routing"
+  ],
+  "tools": [
+    "score_lead",
+    "prioritize",
+    "route_lead"
+  ]
+}

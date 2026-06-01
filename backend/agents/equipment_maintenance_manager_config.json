@@ -1,0 +1,15 @@
+{
+  "name": "Equipment Maintenance Manager",
+  "category": "Manufacturing",
+  "description": "Manages equipment maintenance",
+  "capabilities": [
+    "maintenance_scheduling",
+    "spare_parts",
+    "downtime_prevention"
+  ],
+  "tools": [
+    "schedule_maintenance",
+    "order_parts",
+    "prevent_downtime"
+  ]
+}

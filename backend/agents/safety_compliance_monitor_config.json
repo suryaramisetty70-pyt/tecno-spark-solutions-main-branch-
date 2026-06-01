@@ -1,0 +1,15 @@
+{
+  "name": "Safety Compliance Monitor",
+  "category": "Manufacturing",
+  "description": "Monitors safety compliance",
+  "capabilities": [
+    "incident_tracking",
+    "hazard_identification",
+    "compliance_reporting"
+  ],
+  "tools": [
+    "track_incident",
+    "identify_hazard",
+    "report_compliance"
+  ]
+}

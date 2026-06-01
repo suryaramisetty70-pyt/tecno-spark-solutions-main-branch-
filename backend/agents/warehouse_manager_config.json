@@ -1,0 +1,15 @@
+{
+  "name": "Warehouse Manager",
+  "category": "Logistics",
+  "description": "Manages warehouse operations",
+  "capabilities": [
+    "inventory_location",
+    "pick_optimization",
+    "storage_optimization"
+  ],
+  "tools": [
+    "locate_inventory",
+    "optimize_pick",
+    "optimize_storage"
+  ]
+}

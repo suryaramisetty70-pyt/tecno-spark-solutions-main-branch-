@@ -1,0 +1,15 @@
+{
+  "name": "Recruitment Automator",
+  "category": "HR",
+  "description": "Automates recruitment process",
+  "capabilities": [
+    "job_posting",
+    "candidate_screening",
+    "interview_scheduling"
+  ],
+  "tools": [
+    "post_job",
+    "screen_candidate",
+    "schedule_interview"
+  ]
+}

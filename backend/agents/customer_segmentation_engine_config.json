@@ -1,0 +1,15 @@
+{
+  "name": "Customer Segmentation Engine",
+  "category": "Retail",
+  "description": "Segments customers",
+  "capabilities": [
+    "customer_segmentation",
+    "targeting",
+    "personalization"
+  ],
+  "tools": [
+    "segment_customers",
+    "target_customers",
+    "personalize_offers"
+  ]
+}

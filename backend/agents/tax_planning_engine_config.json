@@ -1,0 +1,15 @@
+{
+  "name": "Tax Planning Engine",
+  "category": "Finance",
+  "description": "Optimizes tax planning and deduction tracking",
+  "capabilities": [
+    "tax_optimization",
+    "deduction_tracking",
+    "filing_preparation"
+  ],
+  "tools": [
+    "track_deduction",
+    "analyze_tax",
+    "generate_report"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Patient Appointment Scheduler",
+  "category": "Healthcare",
+  "description": "Schedules patient appointments",
+  "capabilities": [
+    "appointment_scheduling",
+    "reminder_management",
+    "resource_allocation"
+  ],
+  "tools": [
+    "schedule_appointment",
+    "send_reminder",
+    "allocate_resources"
+  ]
+}

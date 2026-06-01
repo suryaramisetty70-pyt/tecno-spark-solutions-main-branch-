@@ -1,0 +1,15 @@
+{
+  "name": "Curriculum Manager",
+  "category": "Education",
+  "description": "Manages curriculum",
+  "capabilities": [
+    "curriculum_planning",
+    "standards_mapping",
+    "content_organization"
+  ],
+  "tools": [
+    "plan_curriculum",
+    "map_standards",
+    "organize_content"
+  ]
+}

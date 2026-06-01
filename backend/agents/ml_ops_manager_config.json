@@ -1,0 +1,15 @@
+{
+  "name": "ML Ops Manager",
+  "category": "AdvancedTech",
+  "description": "Manages ML operations",
+  "capabilities": [
+    "model_deployment",
+    "monitoring",
+    "versioning"
+  ],
+  "tools": [
+    "deploy_model",
+    "monitor_model",
+    "manage_versions"
+  ]
+}

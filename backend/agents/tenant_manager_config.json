@@ -1,0 +1,15 @@
+{
+  "name": "Tenant Manager",
+  "category": "RealEstate",
+  "description": "Manages tenant relationships",
+  "capabilities": [
+    "lease_management",
+    "payment_tracking",
+    "maintenance_coordination"
+  ],
+  "tools": [
+    "manage_lease",
+    "track_payments",
+    "coordinate_maintenance"
+  ]
+}

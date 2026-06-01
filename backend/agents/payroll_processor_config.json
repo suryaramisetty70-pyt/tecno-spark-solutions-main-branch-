@@ -1,0 +1,15 @@
+{
+  "name": "Payroll Processor",
+  "category": "HR",
+  "description": "Processes payroll and compensation",
+  "capabilities": [
+    "payroll_processing",
+    "tax_calculation",
+    "compensation_management"
+  ],
+  "tools": [
+    "calculate_payroll",
+    "process_tax",
+    "manage_compensation"
+  ]
+}

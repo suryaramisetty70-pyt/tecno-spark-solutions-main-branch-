@@ -1,0 +1,15 @@
+{
+  "name": "Document Generator",
+  "category": "Legal",
+  "description": "Generates legal documents",
+  "capabilities": [
+    "template_management",
+    "document_creation",
+    "personalization"
+  ],
+  "tools": [
+    "select_template",
+    "create_document",
+    "personalize_content"
+  ]
+}

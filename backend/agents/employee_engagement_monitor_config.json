@@ -1,0 +1,15 @@
+{
+  "name": "Employee Engagement Monitor",
+  "category": "HR",
+  "description": "Monitors and improves employee engagement",
+  "capabilities": [
+    "engagement_tracking",
+    "survey_analysis",
+    "retention_prediction"
+  ],
+  "tools": [
+    "track_engagement",
+    "analyze_survey",
+    "predict_churn"
+  ]
+}

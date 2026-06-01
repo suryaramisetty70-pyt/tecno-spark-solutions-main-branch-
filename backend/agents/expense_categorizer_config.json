@@ -1,0 +1,15 @@
+{
+  "name": "Expense Categorizer",
+  "category": "Finance",
+  "description": "Automatically categorizes expenses and generates analytics",
+  "capabilities": [
+    "auto_categorization",
+    "expense_analysis",
+    "spending_insights"
+  ],
+  "tools": [
+    "categorize_expense",
+    "analyze_spending",
+    "detect_anomaly"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Permit Processor",
+  "category": "Government",
+  "description": "Processes permits",
+  "capabilities": [
+    "application_review",
+    "approval_workflow",
+    "documentation"
+  ],
+  "tools": [
+    "review_application",
+    "route_approval",
+    "manage_documents"
+  ]
+}

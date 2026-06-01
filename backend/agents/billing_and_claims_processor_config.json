@@ -1,0 +1,15 @@
+{
+  "name": "Billing and Claims Processor",
+  "category": "Healthcare",
+  "description": "Processes billing and claims",
+  "capabilities": [
+    "claims_processing",
+    "insurance_verification",
+    "revenue_cycle"
+  ],
+  "tools": [
+    "process_claim",
+    "verify_insurance",
+    "manage_revenue_cycle"
+  ]
+}

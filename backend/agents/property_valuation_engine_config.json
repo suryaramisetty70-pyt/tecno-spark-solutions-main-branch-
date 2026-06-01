@@ -1,0 +1,15 @@
+{
+  "name": "Property Valuation Engine",
+  "category": "RealEstate",
+  "description": "Valuates properties",
+  "capabilities": [
+    "valuation_analysis",
+    "market_comparison",
+    "trend_analysis"
+  ],
+  "tools": [
+    "analyze_property",
+    "compare_market",
+    "detect_trends"
+  ]
+}

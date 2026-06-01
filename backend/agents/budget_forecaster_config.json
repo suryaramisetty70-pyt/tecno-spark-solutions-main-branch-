@@ -1,0 +1,15 @@
+{
+  "name": "Budget Forecaster",
+  "category": "Finance",
+  "description": "Forecasts future budget needs and cash flow",
+  "capabilities": [
+    "budget_forecasting",
+    "cash_flow_analysis",
+    "trend_prediction"
+  ],
+  "tools": [
+    "forecast_budget",
+    "analyze_cashflow",
+    "predict_trend"
+  ]
+}

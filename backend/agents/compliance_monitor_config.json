@@ -1,0 +1,15 @@
+{
+  "name": "Compliance Monitor",
+  "category": "Legal",
+  "description": "Monitors legal compliance",
+  "capabilities": [
+    "regulatory_tracking",
+    "policy_enforcement",
+    "audit_support"
+  ],
+  "tools": [
+    "track_regulations",
+    "enforce_policy",
+    "support_audit"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Shipment Tracker",
+  "category": "Logistics",
+  "description": "Tracks shipments",
+  "capabilities": [
+    "shipment_tracking",
+    "delivery_status",
+    "issue_resolution"
+  ],
+  "tools": [
+    "track_shipment",
+    "update_status",
+    "resolve_issue"
+  ]
+}

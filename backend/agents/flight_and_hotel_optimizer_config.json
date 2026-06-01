@@ -1,0 +1,15 @@
+{
+  "name": "Flight and Hotel Optimizer",
+  "category": "Travel",
+  "description": "Optimizes flight and hotel bookings",
+  "capabilities": [
+    "price_tracking",
+    "rebooking_recommendation",
+    "deal_detection"
+  ],
+  "tools": [
+    "track_prices",
+    "recommend_rebooking",
+    "detect_deals"
+  ]
+}

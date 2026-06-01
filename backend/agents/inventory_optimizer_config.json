@@ -1,0 +1,15 @@
+{
+  "name": "Inventory Optimizer",
+  "category": "Retail",
+  "description": "Optimizes inventory",
+  "capabilities": [
+    "inventory_management",
+    "stock_forecasting",
+    "reorder_automation"
+  ],
+  "tools": [
+    "manage_inventory",
+    "forecast_stock",
+    "automate_reorder"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "Travel Safety Advisor",
+  "category": "Travel",
+  "description": "Provides travel safety advice",
+  "capabilities": [
+    "safety_alerts",
+    "documentation_tracking",
+    "emergency_contacts"
+  ],
+  "tools": [
+    "send_alerts",
+    "track_documents",
+    "manage_contacts"
+  ]
+}

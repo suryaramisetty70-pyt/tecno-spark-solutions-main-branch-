@@ -1,0 +1,15 @@
+{
+  "name": "Performance Review Manager",
+  "category": "HR",
+  "description": "Manages performance reviews and feedback",
+  "capabilities": [
+    "review_management",
+    "feedback_collection",
+    "goal_tracking"
+  ],
+  "tools": [
+    "create_review",
+    "collect_feedback",
+    "track_goal"
+  ]
+}

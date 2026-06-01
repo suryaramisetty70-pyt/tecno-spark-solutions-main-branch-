@@ -1,0 +1,15 @@
+{
+  "name": "Public Records Manager",
+  "category": "Government",
+  "description": "Manages public records",
+  "capabilities": [
+    "record_management",
+    "access_control",
+    "compliance"
+  ],
+  "tools": [
+    "store_records",
+    "control_access",
+    "ensure_compliance"
+  ]
+}

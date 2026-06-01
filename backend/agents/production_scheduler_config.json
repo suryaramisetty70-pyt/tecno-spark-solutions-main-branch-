@@ -1,0 +1,15 @@
+{
+  "name": "Production Scheduler",
+  "category": "Manufacturing",
+  "description": "Schedules production operations",
+  "capabilities": [
+    "production_scheduling",
+    "capacity_planning",
+    "bottleneck_detection"
+  ],
+  "tools": [
+    "schedule_production",
+    "plan_capacity",
+    "detect_bottleneck"
+  ]
+}

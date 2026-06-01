@@ -1,0 +1,15 @@
+{
+  "name": "Competitor Analyzer",
+  "category": "Sales",
+  "description": "Analyzes competitor activities and market position",
+  "capabilities": [
+    "competitor_analysis",
+    "market_intelligence",
+    "positioning"
+  ],
+  "tools": [
+    "analyze_competitor",
+    "gather_intelligence",
+    "assess_position"
+  ]
+}
