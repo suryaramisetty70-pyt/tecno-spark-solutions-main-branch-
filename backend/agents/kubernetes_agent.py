@@ -1,9 +1,9 @@
 """Kubernetes Agent - Container orchestration and cluster management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class KubernetesAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="kubernetes_agent", name="Kubernetes Agent", description="Kubernetes cluster and pod management")
         self.name = "Kubernetes Agent"
         self.description = "Kubernetes cluster and pod management"
         self.capabilities = ["manage_pods", "deployments", "services", "ingress", "monitoring"]

@@ -20,8 +20,8 @@ export default function AgentsPage() {
     const loadAgents = async () => {
       try {
         const response = await agentAPI.list();
-        if (response.data) {
-          setAgents(response.data as any);
+        if (response.data && (response.data as any).agents) {
+          setAgents((response.data as any).agents);
         }
       } catch (error) {
         console.error('Failed to load agents:', error);

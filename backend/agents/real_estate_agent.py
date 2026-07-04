@@ -1,9 +1,9 @@
 """Real Estate Agent - Property management and listings"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class RealEstateAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="real_estate_agent", name="Real Estate Agent", description="Property management and real estate transactions")
         self.name = "Real Estate Agent"
         self.description = "Property management and real estate transactions"
         self.capabilities = ["list_property", "search_properties", "manage_tenants", "maintenance_requests", "valuation"]

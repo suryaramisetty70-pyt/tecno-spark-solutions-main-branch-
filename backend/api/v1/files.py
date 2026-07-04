@@ -5,7 +5,7 @@ File management API endpoints
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.database import get_db
+from db.database import get_db_session
 from api.schemas.file_schemas import (
     FileUploadRequest, FileResponse, FileListResponse, FileShareRequest,
     FileSearchRequest, FileMetadataResponse
@@ -22,7 +22,7 @@ async def upload_file(
     description: str = Query(None),
     is_public: bool = Query(False),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Upload file"""
     try:
@@ -44,7 +44,7 @@ async def list_files(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """List user files"""
     try:
@@ -58,7 +58,7 @@ async def list_files(
 async def get_file(
     file_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get file details"""
     try:
@@ -76,7 +76,7 @@ async def get_file(
 async def delete_file(
     file_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Delete file"""
     try:
@@ -94,7 +94,7 @@ async def share_file(
     file_id: int,
     share_request: FileShareRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Share file with another user"""
     try:
@@ -112,7 +112,7 @@ async def get_shared_files(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get files shared with user"""
     try:
@@ -129,7 +129,7 @@ async def get_shared_files(
 async def search_files(
     search_request: FileSearchRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Search files"""
     try:
@@ -146,7 +146,7 @@ async def search_files(
 async def get_file_metadata(
     file_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get file metadata"""
     try:
@@ -161,7 +161,7 @@ async def update_file_tags(
     file_id: int,
     tags: list = Query(...),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Update file tags"""
     try:
@@ -176,7 +176,7 @@ async def create_version(
     file_id: int,
     description: str = Query(None),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Create new file version"""
     try:
@@ -190,7 +190,7 @@ async def create_version(
 async def get_versions(
     file_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get file versions"""
     try:

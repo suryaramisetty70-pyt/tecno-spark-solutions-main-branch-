@@ -1,9 +1,9 @@
 """Docker Agent - Container management and orchestration"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class DockerAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="docker_agent", name="Docker Agent", description="Docker container management")
         self.name = "Docker Agent"
         self.description = "Docker container management"
         self.capabilities = ["manage_images", "run_containers", "networking", "volumes", "registry"]

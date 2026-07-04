@@ -2,7 +2,7 @@
 User management request/response schemas
 """
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -57,7 +57,7 @@ class UserPreferenceRequest(BaseModel):
     auto_save_enabled: Optional[bool] = None
     data_export_frequency: Optional[str] = Field(None, pattern="^(never|monthly|quarterly)$")
 
-    @field_validator('theme', 'language', 'email_digest_frequency', mode='before')
+    @validator('theme', 'language', 'email_digest_frequency', pre=True)
     @classmethod
     def validate_strings(cls, v):
         """Validate string fields"""
@@ -90,7 +90,7 @@ class CreateGoalRequest(BaseModel):
     deadline: Optional[datetime] = None
     priority: Optional[str] = Field(None, pattern="^(low|medium|high|critical)$")
 
-    @field_validator('goal')
+    @validator('goal')
     @classmethod
     def validate_goal(cls, v):
         """Validate goal field"""

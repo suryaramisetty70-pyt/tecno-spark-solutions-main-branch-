@@ -1,9 +1,9 @@
 """Asana Agent - Project management and task organization"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class AsanaAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="asana_agent", name="Asana Agent", description="Project management and task organization")
         self.name = "Asana Agent"
         self.description = "Project management and task organization"
         self.capabilities = ["create_task", "manage_project", "timeline", "team_collaboration", "reporting"]

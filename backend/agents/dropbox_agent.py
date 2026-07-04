@@ -1,9 +1,9 @@
 """Dropbox Agent - File storage and synchronization"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class DropboxAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="dropbox_agent", name="Dropbox Agent", description="Dropbox file storage and sharing")
         self.name = "Dropbox Agent"
         self.description = "Dropbox file storage and sharing"
         self.capabilities = ["upload_file", "manage_files", "sharing", "sync", "backup"]

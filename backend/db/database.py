@@ -64,7 +64,7 @@ async def init_db() -> None:
     """Initialize database and create all tables"""
     try:
         logger.info("Initializing database...")
-        from backend.db.models import Base
+        from db.models import Base
 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -88,13 +88,3 @@ async def close_db() -> None:
     """Close database connection"""
     await engine.dispose()
     logger.info("Database connection closed")
-
-
-
-async def get_db():
-    """Get database session"""
-    async with async_session_maker() as session:
-        try:
-            yield session
-        finally:
-            await session.close()

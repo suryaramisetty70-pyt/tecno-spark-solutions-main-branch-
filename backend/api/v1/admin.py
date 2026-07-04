@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-from db.database import get_db
+from db.database import get_db_session
 from api.schemas.admin_schemas import (
     AdminCreateRequest, AdminResponse, AdminActionRequest, AdminActionResponse,
     AdminDashboardResponse, UserManagementRequest, SystemConfigRequest, AuditLogResponse
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 async def create_admin(
     admin_data: AdminCreateRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Create new admin user"""
     try:
@@ -36,7 +36,7 @@ async def list_admins(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """List all admins"""
     try:
@@ -50,7 +50,7 @@ async def list_admins(
 async def suspend_user(
     request: UserManagementRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Suspend user account"""
     try:
@@ -68,7 +68,7 @@ async def suspend_user(
 async def ban_user(
     request: UserManagementRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Ban user permanently"""
     try:
@@ -86,7 +86,7 @@ async def ban_user(
 async def get_user_status(
     user_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get user account status"""
     try:
@@ -103,7 +103,7 @@ async def get_dashboard(
     start_date: datetime = Query(None),
     end_date: datetime = Query(None),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get admin dashboard statistics"""
     try:
@@ -117,7 +117,7 @@ async def get_dashboard(
 async def record_action(
     action_data: AdminActionRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Record admin action"""
     try:
@@ -133,7 +133,7 @@ async def get_audit_logs(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get audit logs"""
     try:
@@ -147,7 +147,7 @@ async def get_audit_logs(
 async def set_config(
     config_data: SystemConfigRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Set system configuration"""
     try:
@@ -163,7 +163,7 @@ async def set_config(
 async def get_config(
     config_key: str,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get system configuration"""
     try:
@@ -183,7 +183,7 @@ async def generate_report(
     start_date: datetime = Query(...),
     end_date: datetime = Query(...),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Generate system report"""
     try:

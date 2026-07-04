@@ -9,11 +9,14 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from config.settings import settings
 from config.logging_config import setup_logging
 from db.database import init_db, get_db_session
 from core.buddy_core import BuddyCore
+from agents.personal_assistant import PersonalAssistant
 
 # Initialize logging
 setup_logging(settings.LOG_LEVEL)
@@ -32,8 +35,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     # Initialize Buddy Core
     buddy_core = BuddyCore()
+    PersonalAssistant(buddy_core)
     app.state.buddy_core = buddy_core
-    logger.info("✅ Buddy Core initialized")
+    logger.info("✅ Buddy Core and Agents initialized")
 
     logger.info("🎉 Buddy AI OS Backend ready!")
 
@@ -41,6 +45,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
 
     # Shutdown
     logger.info("👋 Buddy AI OS Backend shutting down...")
+    if hasattr(app.state, 'buddy_core'):
+        await app.state.buddy_core.ai_provider.close()
     logger.info("✅ Cleanup complete")
 
 
@@ -51,6 +57,7 @@ def create_app() -> FastAPI:
         title="Buddy AI Operating System API",
         description="Central intelligence for AI agent ecosystem",
         version="0.1.0",
+        lifespan=lifespan,
         docs_url="/docs" if settings.DEBUG else None,
         redoc_url="/redoc" if settings.DEBUG else None,
     )
@@ -87,11 +94,14 @@ def create_app() -> FastAPI:
         # Check database connection
         try:
             async with get_db_session() as session:
-                await session.execute("SELECT 1")
+                await session.execute(text("SELECT 1"))
             return {"status": "ready"}
         except Exception as e:
             logger.error(f"Readiness check failed: {e}")
-            return {"status": "not ready", "error": str(e)}, 503
+            return JSONResponse(
+                status_code=503,
+                content={"status": "not ready", "error": str(e)}
+            )
 
     # Include API routes
     from api.v1 import auth, users, agents, workflows, integrations, notifications, admin, files, analytics, search, marketplace
@@ -110,11 +120,11 @@ def create_app() -> FastAPI:
     return app
 
 
+# Create app instance (used both by uvicorn module import and direct run)
+app = create_app()
+
 if __name__ == "__main__":
     import uvicorn
-
-    # Create app only when running directly
-    app = create_app()
 
     uvicorn.run(
         "api.main:app",
@@ -123,6 +133,3 @@ if __name__ == "__main__":
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower()
     )
-else:
-    # Create app when imported as a module
-    app = create_app()

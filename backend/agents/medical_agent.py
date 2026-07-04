@@ -1,9 +1,9 @@
 """Medical Agent - Healthcare and appointment management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class MedicalAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="medical_agent", name="Medical Agent", description="Healthcare records and appointment management")
         self.name = "Medical Agent"
         self.description = "Healthcare records and appointment management"
         self.capabilities = ["manage_appointments", "track_health", "medication_reminders", "medical_records", "symptom_checker"]

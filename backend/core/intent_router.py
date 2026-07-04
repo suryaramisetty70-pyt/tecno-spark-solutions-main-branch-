@@ -130,64 +130,50 @@ class IntentRouter:
         }
 
     def _initialize_agent_capabilities(self) -> Dict[str, Dict[str, Any]]:
-        """Define what each agent can do"""
-        return {
+        """Define what each agent can do by dynamically loading from agent configs."""
+        import json
+        from pathlib import Path
+        import os
+        
+        capabilities = {
             "personal_assistant_agent": {
                 "category": IntentCategory.PERSONAL,
                 "skills": ["coordination", "general_assistance", "routing"],
                 "priority": 10
-            },
-            "productivity_agent": {
-                "category": IntentCategory.PRODUCTIVITY,
-                "skills": ["task_management", "time_blocking"],
-                "priority": 9
-            },
-            "memory_agent": {
-                "category": IntentCategory.MEMORY,
-                "skills": ["memory_save", "memory_retrieve", "semantic_search"],
-                "priority": 8
-            },
-            "email_agent": {
-                "category": IntentCategory.COMMUNICATION,
-                "skills": ["email_send", "email_receive", "thread_management"],
-                "priority": 8
-            },
-            "researcher_agent": {
-                "category": IntentCategory.RESEARCH,
-                "skills": ["web_research", "information_aggregation", "source_verification"],
-                "priority": 7
-            },
-            "student_agent": {
-                "category": IntentCategory.LEARNING,
-                "skills": ["course_tracking", "assignment_tracking", "study_planning"],
-                "priority": 7
-            },
-            "accountant_agent": {
-                "category": IntentCategory.FINANCIAL,
-                "skills": ["expense_tracking", "financial_reporting", "reconciliation"],
-                "priority": 8
-            },
-            "sales_agent": {
-                "category": IntentCategory.BUSINESS,
-                "skills": ["lead_management", "deal_tracking", "forecasting"],
-                "priority": 8
-            },
-            "booking_agent": {
-                "category": IntentCategory.TRAVEL,
-                "skills": ["flight_booking", "hotel_booking", "itinerary_planning"],
-                "priority": 7
-            },
-            "content_writer_agent": {
-                "category": IntentCategory.CONTENT,
-                "skills": ["blog_writing", "article_creation", "copy_writing"],
-                "priority": 7
-            },
-            "automation_agent": {
-                "category": IntentCategory.AUTOMATION,
-                "skills": ["workflow_creation", "trigger_definition", "action_execution"],
-                "priority": 9
             }
         }
+        
+        # Determine paths
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        agents_dir = os.path.join(base_dir, "agents")
+        
+        if os.path.exists(agents_dir):
+            for filename in os.listdir(agents_dir):
+                if filename.endswith("_config.json"):
+                    try:
+                        filepath = os.path.join(agents_dir, filename)
+                        with open(filepath, 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+                            
+                        # Try to map category
+                        cat_str = (data.get("category") or "business").upper()
+                        category_enum = IntentCategory.OTHER
+                        for enum_member in IntentCategory:
+                            if enum_member.name == cat_str:
+                                category_enum = enum_member
+                                break
+                        
+                        agent_id = data.get("name", "").lower().replace(" ", "_")
+                        if agent_id:
+                            capabilities[agent_id] = {
+                                "category": category_enum,
+                                "skills": data.get("capabilities", []),
+                                "priority": 5
+                            }
+                    except Exception as e:
+                        self.logger.warning(f"Failed to load agent config {filename}: {e}")
+                        
+        return capabilities
 
     async def classify_intent(
         self,

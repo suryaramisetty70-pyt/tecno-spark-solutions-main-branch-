@@ -1,9 +1,9 @@
 """Evernote Agent - Note-taking and organization"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class EvernoteAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="evernote_agent", name="Evernote Agent", description="Evernote note-taking and organization")
         self.name = "Evernote Agent"
         self.description = "Evernote note-taking and organization"
         self.capabilities = ["create_note", "manage_notebooks", "tagging", "search", "sharing"]

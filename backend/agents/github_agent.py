@@ -1,9 +1,9 @@
 """GitHub Agent - Repository and collaboration management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class GitHubAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="github_agent", name="GitHub Agent", description="GitHub repository and issue management")
         self.name = "GitHub Agent"
         self.description = "GitHub repository and issue management"
         self.capabilities = ["manage_repos", "handle_issues", "pull_requests", "collaborators", "releases"]

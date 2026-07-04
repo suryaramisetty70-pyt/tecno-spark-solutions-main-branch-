@@ -1,9 +1,9 @@
 """Finance Agent - Financial planning and investment management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class FinanceAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="finance_agent", name="Finance Agent", description="Personal finance and investment management")
         self.name = "Finance Agent"
         self.description = "Personal finance and investment management"
         self.capabilities = ["track_investments", "portfolio_analysis", "retirement_planning", "expense_optimization", "wealth_management"]

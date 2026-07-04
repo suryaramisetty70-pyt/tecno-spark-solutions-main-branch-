@@ -1,0 +1,285 @@
+version: '3.8'
+
+# ==================== TECNO SPARK BUDDY AI OS - COMPLETE STACK ====================
+# ALL SERVICES: FREE & OPEN-SOURCE (ZERO PAID SERVICES)
+# Multi-tenant, Enterprise-grade, 1000+ agents, Global scale
+
+services:
+  # ==================== CORE API ====================
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: buddy-ai-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@postgres:5432/buddy_ai
+      REDIS_URL: redis://redis:6379/0
+      CHROMADB_URL: http://chromadb:8000
+      OLLAMA_BASE_URL: http://ollama:11434
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production-32chars}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-in-production-32chars}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-in-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+      ollama:
+        condition: service_started
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - buddy-ai-network
+    command: uvicorn backend.api.main_all_phases:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==================== DATA LAYER ====================
+
+  # PostgreSQL (Primary database - Multi-tenancy, all data)
+  postgres:
+    image: postgres:15-alpine
+    container_name: buddy-ai-postgres
+    environment:
+      POSTGRES_DB: buddy_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - buddy-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+
+  # Redis (Caching, sessions, rate limiting, token blacklist)
+  redis:
+    image: redis:7-alpine
+    container_name: buddy-ai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - buddy-ai-network
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB (Vector database for agent embeddings, semantic search)
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: buddy-ai-chromadb
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/data
+    environment:
+      PERSIST_DIRECTORY: /chroma/data
+      CHROMA_DB_IMPL: duckdb+parquet
+    networks:
+      - buddy-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Neo4j (Optional: Graph database for relationships)
+  neo4j:
+    image: neo4j:latest
+    container_name: buddy-ai-neo4j
+    ports:
+      - "7687:7687"
+      - "7474:7474"
+    environment:
+      NEO4J_AUTH: neo4j/password
+      NEO4J_PLUGINS: '["graph-data-science"]'
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - buddy-ai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7474"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== FREE AI MODELS (LOCAL) ====================
+
+  # Ollama (Free local LLM inference - Mistral, Llama, Phi, etc)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: buddy-ai-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - buddy-ai-network
+    environment:
+      OLLAMA_KEEP_ALIVE: 24h
+    command: serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== MONITORING & OBSERVABILITY ====================
+
+  # Prometheus (Metrics collection)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: buddy-ai-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - buddy-ai-network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana (Visualization & Dashboards)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: buddy-ai-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - buddy-ai-network
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== LOGGING & DIAGNOSTICS ====================
+
+  # Elasticsearch (Log storage & search)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: buddy-ai-elasticsearch
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.ml.enabled: "false"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - buddy-ai-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q cluster_name"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana (Log visualization)
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: buddy-ai-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changeme
+    networks:
+      - buddy-ai-network
+    depends_on:
+      - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q kibana"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==================== OPTIONAL DEVELOPMENT TOOLS ====================
+
+  # pgAdmin (PostgreSQL Management UI)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: buddy-ai-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@admin.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    networks:
+      - buddy-ai-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+# ==================== VOLUMES ====================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  chromadb_data:
+    driver: local
+  neo4j_data:
+    driver: local
+  ollama_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# ==================== NETWORKS ====================
+
+networks:
+  buddy-ai-network:
+    driver: bridge

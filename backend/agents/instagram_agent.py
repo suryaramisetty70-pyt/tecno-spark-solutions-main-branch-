@@ -1,9 +1,9 @@
 """Instagram Agent - Social media content management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class InstagramAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="instagram_agent", name="Instagram Agent", description="Instagram content management and social engagement")
         self.name = "Instagram Agent"
         self.description = "Instagram content management and social engagement"
         self.capabilities = ["post_photo", "share_story", "reply_comments", "analyze_metrics", "schedule_post"]

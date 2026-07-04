@@ -1,10 +1,10 @@
 """LinkedIn Agent - Connection and networking management"""
 from datetime import datetime
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class LinkedInAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="linkedin_agent", name="LinkedIn Agent", description="Professional networking and connection management")
         self.name = "LinkedIn Agent"
         self.description = "Professional networking and connection management"
         self.capabilities = ["view_profile", "send_connection", "message_contact", "job_search", "post_content"]

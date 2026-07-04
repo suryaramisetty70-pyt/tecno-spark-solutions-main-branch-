@@ -1,9 +1,9 @@
 """CRM Agent - Customer Relationship Management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class CRMAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="crm_agent", name="CRM Agent", description="Customer relationship and sales pipeline management")
         self.name = "CRM Agent"
         self.description = "Customer relationship and sales pipeline management"
         self.capabilities = ["manage_contacts", "track_deals", "manage_pipeline", "generate_reports", "forecast_sales"]

@@ -1,9 +1,9 @@
 """GoogleDrive Agent - Google Drive cloud storage"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class GoogledriveAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="googledrive_agent", name="GoogleDrive Agent", description="Google Drive cloud storage and collaboration")
         self.name = "GoogleDrive Agent"
         self.description = "Google Drive cloud storage and collaboration"
         self.capabilities = ["upload_file", "manage_files", "sharing", "permissions", "realtime_sync"]

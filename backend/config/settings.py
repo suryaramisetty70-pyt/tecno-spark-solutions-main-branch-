@@ -5,7 +5,10 @@ Configuration and settings for Buddy AI OS Backend
 from functools import lru_cache
 from typing import List
 
-from pydantic_settings import BaseSettings
+try:
+    from pydantic_settings import BaseSettings
+except ImportError:
+    from pydantic import BaseSettings
 from pydantic import Field
 
 
@@ -50,6 +53,13 @@ class Settings(BaseSettings):
     OLLAMA_BASE_URL: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
     DEFAULT_LOCAL_MODEL: str = Field(default="mistral", env="DEFAULT_LOCAL_MODEL")
 
+    # AI Configuration (Free Cloud APIs)
+    GEMINI_API_KEY: str = Field(default="", env="GEMINI_API_KEY")
+    GROQ_API_KEY: str = Field(default="", env="GROQ_API_KEY")
+    OPENROUTER_API_KEY: str = Field(default="", env="OPENROUTER_API_KEY")
+    DEFAULT_AI_PROVIDER: str = Field(default="groq", env="DEFAULT_AI_PROVIDER")
+    DEFAULT_AI_MODEL: str = Field(default="llama3-8b-8192", env="DEFAULT_AI_MODEL")
+
     # Cloud AI (Optional fallback)
     DEEPSEEK_API_KEY: str = Field(default="", env="DEEPSEEK_API_KEY")
     DEEPSEEK_API_URL: str = Field(
@@ -84,7 +94,7 @@ class Settings(BaseSettings):
 
     class Config:
         """Pydantic config"""
-        env_file = "../.env"
+        env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
 

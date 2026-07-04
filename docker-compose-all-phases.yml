@@ -1,0 +1,101 @@
+version: '3.8'
+
+# ==================== PHASE 5: COMPLETE DOCKER COMPOSE ====================
+# Multi-service deployment for global scale
+# All services FREE and open-source
+
+services:
+  # ==================== CORE SERVICES ====================
+
+  # FastAPI Backend (All 5 Phases)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-password}@postgres:5432/buddy_ai
+      REDIS_URL: redis://redis:6379/0
+      CHROMADB_URL: http://chromadb:8001
+      SECRET_KEY: ${SECRET_KEY:-change-this-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-change-this-in-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+    depends_on:
+      - postgres
+      - redis
+      - chromadb
+    volumes:
+      - ./backend:/app/backend
+    command: uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ==================== DATA LAYER ====================
+
+  # PostgreSQL (Multi-tenancy, all phases)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: buddy_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (Caching, rate limiting, token blacklist)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChromaDB (Vector DB for agent embeddings)
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/data
+    environment:
+      PERSIST_DIRECTORY: /chroma/data
+
+  # ==================== MONITORING ====================
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  postgres_data:
+  redis_data:
+  chromadb_data:
+  prometheus_data:
+  grafana_data:

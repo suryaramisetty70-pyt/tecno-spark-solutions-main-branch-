@@ -1,9 +1,9 @@
 """OneDrive Agent - Microsoft OneDrive cloud storage"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class OnedriveAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="onedrive_agent", name="OneDrive Agent", description="Microsoft OneDrive cloud storage")
         self.name = "OneDrive Agent"
         self.description = "Microsoft OneDrive cloud storage"
         self.capabilities = ["upload_file", "manage_files", "sharing", "sync", "collaboration"]

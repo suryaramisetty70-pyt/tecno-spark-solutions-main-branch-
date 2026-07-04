@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Dict, Any
 
-from db.database import get_db
+from db.database import get_db_session
 from api.schemas.notification_schemas import (
     NotificationCreateRequest, NotificationResponse, NotificationListResponse,
     NotificationStatsResponse, BulkNotificationRequest, BulkNotificationResponse
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1/notifications", tags=["notifications"])
 async def create_notification(
     notification_data: NotificationCreateRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Send individual notification"""
     try:
@@ -56,7 +56,7 @@ async def list_notifications(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """List notifications for current user"""
     try:
@@ -98,7 +98,7 @@ async def list_notifications(
 async def get_notification(
     notification_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get notification by ID"""
     try:
@@ -137,7 +137,7 @@ async def get_notification(
 async def mark_as_read(
     notification_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Mark notification as read"""
     try:
@@ -173,7 +173,7 @@ async def mark_as_read(
 async def mark_as_unread(
     notification_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Mark notification as unread"""
     try:
@@ -209,7 +209,7 @@ async def mark_as_unread(
 async def delete_notification(
     notification_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Delete notification"""
     try:
@@ -228,7 +228,7 @@ async def delete_notification(
 async def send_bulk_notifications(
     bulk_data: BulkNotificationRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Send bulk notifications"""
     try:
@@ -252,7 +252,7 @@ async def send_bulk_notifications(
 @router.get("/stats", response_model=NotificationStatsResponse)
 async def get_stats(
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get notification statistics"""
     try:
@@ -275,7 +275,7 @@ async def get_stats(
 @router.post("/mark-all-read", status_code=200)
 async def mark_all_as_read(
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Mark all notifications as read"""
     try:
@@ -289,7 +289,7 @@ async def mark_all_as_read(
 async def delete_old_notifications(
     days: int = Query(30, ge=1),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Delete notifications older than specified days"""
     try:
@@ -305,7 +305,7 @@ async def search_notifications(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Search notifications"""
     try:

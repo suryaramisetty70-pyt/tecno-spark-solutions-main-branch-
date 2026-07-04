@@ -1,9 +1,9 @@
 """Figma Agent - Design collaboration and prototyping"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class FigmaAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="figma_agent", name="Figma Agent", description="Design collaboration and prototyping")
         self.name = "Figma Agent"
         self.description = "Design collaboration and prototyping"
         self.capabilities = ["create_design", "manage_files", "collaboration", "components", "export"]

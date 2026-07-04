@@ -1,7 +1,7 @@
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 class StripeAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="stripe_agent", name="Stripe Agent", description="Stripe payment processing and billing")
         self.name = "Stripe Agent"
         self.description = "Stripe payment processing and billing"
         self.capabilities = ["process_payment", "manage_subscription", "invoicing", "refunds", "analytics"]

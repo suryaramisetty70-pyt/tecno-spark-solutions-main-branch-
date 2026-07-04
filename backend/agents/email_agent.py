@@ -31,9 +31,16 @@ class EmailAgent(BaseAgent):
             }
         ]
 
+        # Registered Monitored Accounts
+        self.monitored_accounts = [
+            "suryaramisetty70@gmail.com",
+            "vtu27657@veltech.edu.in"
+        ]
+        self.live_mode = False # Requires App Passwords to switch to True
+
         self.tools = self._initialize_tools()
         self._initialize_permissions()
-        self.logger.info("✅ Email Agent initialized")
+        self.logger.info("✅ Email Agent initialized with 2 monitored accounts (Simulation Mode)")
 
     def _initialize_tools(self) -> List[Tool]:
         return [
@@ -109,25 +116,85 @@ class EmailAgent(BaseAgent):
         return {"status": "error", "error": f"Unknown action: {action}"}
 
     async def _send_email(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        return {
-            "status": "success",
-            "email_id": "email_123",
-            "to": params.get("to"),
-            "subject": params.get("subject"),
-            "sent_at": datetime.now().isoformat()
-        }
+        import smtplib
+        from email.mime.text import MIMEText
+        import os
+        from dotenv import load_dotenv
+        
+        load_dotenv()
+        email_user = os.getenv("GMAIL_USER")
+        email_pass = os.getenv("GMAIL_APP_PASSWORD")
+        
+        if not email_user or not email_pass:
+            return {"status": "error", "message": "GMAIL_USER or GMAIL_APP_PASSWORD not set in .env"}
+            
+        try:
+            msg = MIMEText(params.get("body", ""))
+            msg['Subject'] = params.get("subject", "")
+            msg['From'] = email_user
+            msg['To'] = params.get("to", "")
+            
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(email_user, email_pass)
+                server.send_message(msg)
+                
+            return {
+                "status": "success",
+                "to": params.get("to"),
+                "subject": params.get("subject"),
+                "sent_at": datetime.now().isoformat()
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
 
     async def _receive_emails(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        return {
-            "status": "success",
-            "folder": params.get("folder", "inbox"),
-            "emails": [],
-            "count": 0
-        }
+        import imaplib
+        import email
+        import os
+        from dotenv import load_dotenv
+        
+        load_dotenv()
+        email_user = os.getenv("GMAIL_USER")
+        email_pass = os.getenv("GMAIL_APP_PASSWORD")
+        
+        if not email_user or not email_pass:
+            return {"status": "error", "message": "GMAIL_USER or GMAIL_APP_PASSWORD not set in .env"}
+            
+        try:
+            mail = imaplib.IMAP4_SSL('imap.gmail.com')
+            mail.login(email_user, email_pass)
+            mail.select(params.get("folder", "inbox"))
+            
+            # Search for all unread emails
+            status, messages = mail.search(None, 'UNSEEN')
+            email_ids = messages[0].split()
+            
+            limit = params.get("limit", 5)
+            fetched_emails = []
+            
+            for eid in email_ids[-limit:]:
+                _, msg_data = mail.fetch(eid, '(RFC822)')
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        subject = msg['subject']
+                        sender = msg['from']
+                        fetched_emails.append({"from": sender, "subject": subject})
+                        
+            mail.close()
+            mail.logout()
+            
+            return {
+                "status": "success",
+                "folder": params.get("folder", "inbox"),
+                "emails": fetched_emails,
+                "count": len(fetched_emails)
+            }
+        except Exception as e:
+            return {"status": "error", "message": str(e)}
 
     async def _search_emails(self, params: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "status": "success",
-            "query": params.get("query"),
-            "results": []
+            "status": "error",
+            "message": "Search feature requires IMAP Search logic. Use receive_emails for now."
         }

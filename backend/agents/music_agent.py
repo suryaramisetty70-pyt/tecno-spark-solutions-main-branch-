@@ -1,9 +1,9 @@
 """Music Agent - Music production and streaming management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class MusicAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="music_agent", name="Music Agent", description="Music production and streaming management")
         self.name = "Music Agent"
         self.description = "Music production and streaming management"
         self.capabilities = ["manage_playlist", "track_analytics", "collaborate", "distribute_music", "royalty_tracking"]

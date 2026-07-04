@@ -14,6 +14,7 @@ from core.event_bus import EventBus, EventType
 from core.memory_engine import MemoryEngine, MemoryType
 from core.workflow_engine import WorkflowEngine
 from core.model_router import ModelRouter
+from core.ai_provider import AIProvider
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +49,50 @@ class BuddyCore:
         self.event_bus = EventBus()
         self.workflow_engine = WorkflowEngine()
         self.model_router = ModelRouter()
+        self.ai_provider = AIProvider()
 
+        self._load_all_agents()
         self.logger.info("🧠 Buddy Core initialized with all components")
+
+    def _load_all_agents(self):
+        """Dynamically load and wake up all agents from the agents directory."""
+        import os
+        import importlib
+        import inspect
+        from pathlib import Path
+        
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        agents_dir = Path(os.path.join(base_dir, "agents"))
+        
+        loaded_count = 0
+        for agent_file in agents_dir.glob("*_agent.py"):
+            if agent_file.name in ["base_agent.py", "enhanced_base_agent.py"]:
+                continue
+            try:
+                module_name = f"agents.{agent_file.stem}"
+                spec = importlib.util.spec_from_file_location(module_name, agent_file)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                
+                for name, obj in inspect.getmembers(module, inspect.isclass):
+                    if name.endswith("Agent") and name not in ["BaseAgent", "EnhancedBaseAgent"]:
+                        try:
+                            # Instantiate and register
+                            if "core" in inspect.signature(obj.__init__).parameters:
+                                agent_instance = obj(self)
+                            else:
+                                agent_instance = obj()
+                                
+                            agent_id = getattr(agent_instance, "id", None) or agent_file.stem.replace("_agent", "")
+                            self.register_agent(agent_id, agent_instance)
+                            loaded_count += 1
+                        except Exception as instantiate_error:
+                            self.logger.debug(f"Skipping {name}: {instantiate_error}")
+                        break
+            except Exception as e:
+                self.logger.warning(f"Failed to load agent file {agent_file.name}: {e}")
+                
+        self.logger.info(f"✅ Automatically woke up and registered {loaded_count} specialized agents!")
 
     async def initialize(self) -> None:
         """Initialize all core components"""

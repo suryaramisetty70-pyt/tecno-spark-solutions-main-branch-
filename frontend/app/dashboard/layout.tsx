@@ -1,8 +1,6 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 
 export default function DashboardLayout({
@@ -10,23 +8,13 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, user, logout } = useAuth();
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  const handleLogout = () => {
-    logout();
-    router.push('/login');
+  // Mock user data - no authentication required
+  const user = {
+    username: 'Admin',
+    email: 'admin@technospark.com',
+    full_name: 'Administrator'
   };
 
   const menuItems = [
@@ -80,7 +68,7 @@ export default function DashboardLayout({
             )}
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => alert('Logout disabled - Demo mode')}
             className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded transition"
           >
             {sidebarOpen ? 'Logout' : '🚪'}

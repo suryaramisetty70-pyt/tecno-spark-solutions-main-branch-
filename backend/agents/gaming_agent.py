@@ -1,9 +1,9 @@
 """Gaming Agent - Game recommendations and tournament management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class GamingAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="gaming_agent", name="Gaming Agent", description="Gaming recommendations and multiplayer coordination")
         self.name = "Gaming Agent"
         self.description = "Gaming recommendations and multiplayer coordination"
         self.capabilities = ["recommend_games", "find_players", "track_tournaments", "manage_guilds", "stream_management"]

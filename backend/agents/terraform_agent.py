@@ -1,9 +1,9 @@
 """Terraform Agent - Infrastructure as Code management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class TerraformAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="terraform_agent", name="Terraform Agent", description="Terraform infrastructure provisioning")
         self.name = "Terraform Agent"
         self.description = "Terraform infrastructure provisioning"
         self.capabilities = ["plan_infrastructure", "apply_changes", "destroy", "state_management", "modules"]

@@ -1,9 +1,9 @@
 """Trello Agent - Kanban board and task management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class TrelloAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="trello_agent", name="Trello Agent", description="Kanban board and task management")
         self.name = "Trello Agent"
         self.description = "Kanban board and task management"
         self.capabilities = ["create_card", "manage_board", "list_management", "collaboration", "automation"]

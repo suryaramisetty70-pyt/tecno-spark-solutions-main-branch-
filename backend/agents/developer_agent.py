@@ -1,9 +1,9 @@
 """Developer Agent - Software development and code management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class DeveloperAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="developer_agent", name="Developer Agent", description="Software development and code repository management")
         self.name = "Developer Agent"
         self.description = "Software development and code repository management"
         self.capabilities = ["manage_repos", "code_review", "deployment", "bug_tracking", "documentation_generation"]

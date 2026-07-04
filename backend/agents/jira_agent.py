@@ -1,9 +1,9 @@
 """Jira Agent - Project tracking and issue management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class JiraAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="jira_agent", name="Jira Agent", description="Jira project and issue tracking")
         self.name = "Jira Agent"
         self.description = "Jira project and issue tracking"
         self.capabilities = ["create_issues", "manage_sprints", "track_progress", "assign_tasks", "reporting"]

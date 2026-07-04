@@ -1,9 +1,9 @@
 """Teaching Agent - Online education and course management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class TeachingAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="teaching_agent", name="Teaching Agent", description="Online education and student management")
         self.name = "Teaching Agent"
         self.description = "Online education and student management"
         self.capabilities = ["create_courses", "manage_students", "grade_assignments", "schedule_classes", "generate_reports"]

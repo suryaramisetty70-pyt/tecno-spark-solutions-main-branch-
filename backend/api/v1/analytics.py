@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.database import get_db
+from db.database import get_db_session
 from api.schemas.analytics_schemas import (
     UserAnalyticsResponse, WorkflowAnalyticsResponse, AgentAnalyticsResponse,
     IntegrationAnalyticsResponse, APIAnalyticsResponse, DashboardResponse,
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/api/v1/analytics", tags=["analytics"])
 async def get_user_analytics(
     time_range: str = Query("30d"),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get user analytics"""
     try:
@@ -36,7 +36,7 @@ async def get_user_analytics(
 async def get_workflow_analytics(
     workflow_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get workflow analytics"""
     try:
@@ -50,7 +50,7 @@ async def get_workflow_analytics(
 async def get_agent_analytics(
     agent_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get agent analytics"""
     try:
@@ -64,7 +64,7 @@ async def get_agent_analytics(
 async def get_integration_analytics(
     integration_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get integration analytics"""
     try:
@@ -78,7 +78,7 @@ async def get_integration_analytics(
 async def get_api_analytics(
     endpoint: str = Query(None),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get API analytics"""
     try:
@@ -92,7 +92,7 @@ async def get_api_analytics(
 async def get_dashboard(
     time_range: str = Query("30d"),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get analytics dashboard"""
     try:
@@ -106,7 +106,7 @@ async def get_dashboard(
 async def generate_report(
     report_request: ReportRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Generate analytics report"""
     try:
@@ -122,7 +122,7 @@ async def generate_report(
 @router.get("/health", response_model=HealthMetricsResponse)
 async def get_health_metrics(
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get system health metrics"""
     try:
@@ -139,7 +139,7 @@ async def get_timeseries(
     end_date: datetime = Query(...),
     granularity: str = Query(default="daily"),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get time series data"""
     try:

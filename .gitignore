@@ -1,97 +1,25 @@
-# Python
+# .gitignore for Omni-MNC
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
 *.egg
-MANIFEST
-venv/
-env/
-.venv
-.env
-.env.local
-.env.*.local
-
-# IDEs
-.vscode/
-.idea/
-.DS_Store
-*.swp
-*.swo
-*~
-.project
-.pydevproject
-.settings/
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.npm
-.eslintcache
-.cache/
+*.egg-info/
 dist/
-
-# Frontend builds
 build/
-.next/
-.nuxt/
-dist/
-.cache
-
-# Testing
-.coverage
-.pytest_cache/
-htmlcov/
-
-# Database
+.env
 *.db
 *.sqlite
 *.sqlite3
-postgres_data/
-
-# Logs
-logs/
+node_modules/
+.next/
 *.log
-
-# OS
 .DS_Store
 Thumbs.db
-.env.local
-
-# IDE temp files
-.tmp/
-*.tmp
-
-# Docker
-docker-compose.override.yml
-
-# Tauri
-src-tauri/target/
-
-# Build outputs
-dist-tauri/
-
-# Git
-.git/
-
-# Misc
-.vscode-server/
-node_modules/
-.turbo/
+*.zip
+*.tar.gz
+*.tar
+venv/
+.venv/
+env/
+.idea/
+*.pem
+*.key

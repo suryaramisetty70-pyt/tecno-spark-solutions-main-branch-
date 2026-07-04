@@ -1,9 +1,9 @@
 """Legal Agent - Legal document and compliance management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class LegalAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="legal_agent", name="Legal Agent", description="Legal document review and compliance management")
         self.name = "Legal Agent"
         self.description = "Legal document review and compliance management"
         self.capabilities = ["review_contracts", "manage_compliance", "generate_documents", "track_deadlines", "risk_assessment"]

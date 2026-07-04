@@ -1,9 +1,9 @@
 """Firebase Agent - Backend infrastructure and database management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class FirebaseAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="firebase_agent", name="Firebase Agent", description="Backend infrastructure and database management")
         self.name = "Firebase Agent"
         self.description = "Backend infrastructure and database management"
         self.capabilities = ["manage_database", "authentication", "hosting", "functions", "analytics"]

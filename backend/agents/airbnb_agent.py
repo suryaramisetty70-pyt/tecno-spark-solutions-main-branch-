@@ -1,9 +1,9 @@
 """Airbnb Agent - Property rental and booking management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class AirbnbAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="airbnb_agent", name="Airbnb Agent", description="Airbnb property and booking management")
         self.name = "Airbnb Agent"
         self.description = "Airbnb property and booking management"
         self.capabilities = ["list_property", "manage_bookings", "guest_communication", "pricing", "reviews"]

@@ -1,11 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { AuthProvider } from '@/lib/auth-context';
+import ErrorBoundary from './error-boundary';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Buddy AI - Operating System',
-  description: 'Intelligent AI agent orchestration platform',
-  viewport: 'width=device-width, initial-scale=1',
+  description: 'Intelligent AI agent orchestration platform by Tecno Spark Solutions',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -16,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-gray-50">
-        <AuthProvider>{children}</AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>{children}</AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

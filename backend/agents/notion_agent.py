@@ -1,7 +1,7 @@
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 class NotionAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="notion_agent", name="Notion Agent", description="Notion database and wiki management")
         self.name = "Notion Agent"
         self.description = "Notion database and wiki management"
         self.capabilities = ["create_page", "manage_database", "organize_docs", "share_content", "backups"]

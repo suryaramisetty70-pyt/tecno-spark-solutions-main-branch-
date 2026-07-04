@@ -1,0 +1,445 @@
+---
+# BUDDY AI OS - KUBERNETES DEPLOYMENT MANIFESTS
+# Complete service deployment for 3 regions
+# Usage: kubectl apply -f buddyai-k8s.yaml
+
+---
+# NAMESPACE
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: buddy-production
+  labels:
+    name: buddy-production
+
+---
+# CONFIGMAP - ENVIRONMENT CONFIGURATION
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: buddy-config
+  namespace: buddy-production
+data:
+  LOG_LEVEL: "INFO"
+  API_VERSION: "1.0.0"
+  ENVIRONMENT: "production"
+  AGENT_COUNT: "155"
+  COMPLIANCE_MODE: "SOC2_HIPAA_GDPR"
+
+---
+# SECRETS - SENSITIVE DATA
+apiVersion: v1
+kind: Secret
+metadata:
+  name: buddy-secrets
+  namespace: buddy-production
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://admin:PASSWORD@buddy-primary.c.eu-west-1.rds.amazonaws.com:5432/buddy_db"
+  REDIS_URL: "redis://buddy-redis-primary.jx5c7r.ng.0001.use1.cache.amazonaws.com:6379"
+  JWT_SECRET: "your-super-secret-jwt-key-change-in-production"
+  AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+  AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+---
+# PERSISTENT VOLUME CLAIM - DATABASE
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: buddy-db-pvc
+  namespace: buddy-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# PERSISTENT VOLUME CLAIM - REDIS
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: buddy-redis-pvc
+  namespace: buddy-production
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# SERVICE - API BACKEND
+apiVersion: v1
+kind: Service
+metadata:
+  name: buddy-api
+  namespace: buddy-production
+  labels:
+    app: buddy-api
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: 8443
+      protocol: TCP
+      name: https
+  selector:
+    app: buddy-api
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# DEPLOYMENT - FASTAPI BACKEND (10 replicas in primary region)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buddy-api
+  namespace: buddy-production
+  labels:
+    app: buddy-api
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: buddy-api
+  template:
+    metadata:
+      labels:
+        app: buddy-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - buddy-api
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: api
+          image: buddy-ai/api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: buddy-secrets
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: buddy-secrets
+                  key: REDIS_URL
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: buddy-secrets
+                  key: JWT_SECRET
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: buddy-config
+                  key: LOG_LEVEL
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: logs
+              mountPath: /var/log/buddy
+      volumes:
+        - name: logs
+          emptyDir: {}
+
+---
+# HORIZONTAL POD AUTOSCALER - API
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: buddy-api-hpa
+  namespace: buddy-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: buddy-api
+  minReplicas: 10
+  maxReplicas: 100
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75
+
+---
+# DEPLOYMENT - AGENT EXECUTOR PODS
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: buddy-agents
+  namespace: buddy-production
+  labels:
+    app: buddy-agents
+spec:
+  replicas: 50
+  selector:
+    matchLabels:
+      app: buddy-agents
+  template:
+    metadata:
+      labels:
+        app: buddy-agents
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9000"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - buddy-agents
+                topologyKey: kubernetes.io/hostname
+      containers:
+        - name: agent-executor
+          image: buddy-ai/agent-executor:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+              name: metrics
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: buddy-secrets
+                  key: REDIS_URL
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: buddy-secrets
+                  key: DATABASE_URL
+            - name: LOG_LEVEL
+              value: "INFO"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+
+---
+# HORIZONTAL POD AUTOSCALER - AGENTS
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: buddy-agents-hpa
+  namespace: buddy-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: buddy-agents
+  minReplicas: 50
+  maxReplicas: 200
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+---
+# NETWORK POLICY - RESTRICT TRAFFIC
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: buddy-network-policy
+  namespace: buddy-production
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: buddy-production
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9000
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: buddy-production
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 53
+        - protocol: UDP
+          port: 53
+
+---
+# RESOURCE QUOTA
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: buddy-quota
+  namespace: buddy-production
+spec:
+  hard:
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    pods: "500"
+    services: "50"
+    persistentvolumeclaims: "10"
+
+---
+# INGRESS - ROUTE EXTERNAL TRAFFIC
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: buddy-ingress
+  namespace: buddy-production
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "1000"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.buddy-ai.global
+      secretName: buddy-tls-cert
+  rules:
+    - host: api.buddy-ai.global
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: buddy-api
+                port:
+                  number: 80
+          - path: /agents
+            pathType: Prefix
+            backend:
+              service:
+                name: buddy-agents
+                port:
+                  number: 9000
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: buddy-api
+                port:
+                  number: 80
+
+---
+# SERVICE MONITOR - PROMETHEUS
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: buddy-api-monitor
+  namespace: buddy-production
+spec:
+  selector:
+    matchLabels:
+      app: buddy-api
+  endpoints:
+    - port: http
+      interval: 30s
+      path: /metrics
+
+---
+# POD DISRUPTION BUDGET
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: buddy-api-pdb
+  namespace: buddy-production
+spec:
+  minAvailable: 5
+  selector:
+    matchLabels:
+      app: buddy-api
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: buddy-agents-pdb
+  namespace: buddy-production
+spec:
+  minAvailable: 25
+  selector:
+    matchLabels:
+      app: buddy-agents

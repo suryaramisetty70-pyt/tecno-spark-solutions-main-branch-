@@ -1,7 +1,7 @@
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 class PayPalAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="paypal_agent", name="PayPal Agent", description="PayPal payment and account management")
         self.name = "PayPal Agent"
         self.description = "PayPal payment and account management"
         self.capabilities = ["send_money", "receive_payment", "invoicing", "disputes", "account"]

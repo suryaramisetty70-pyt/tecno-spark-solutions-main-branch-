@@ -1,9 +1,9 @@
 """Discord Agent - Community and gaming communication"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class DiscordAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="discord_agent", name="Discord Agent", description="Discord server management and community engagement")
         self.name = "Discord Agent"
         self.description = "Discord server management and community engagement"
         self.capabilities = ["send_message", "manage_roles", "moderate_content", "schedule_events", "manage_bots"]

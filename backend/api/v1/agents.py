@@ -2,7 +2,8 @@
 Agent management API endpoints
 """
 
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
 
@@ -18,6 +19,64 @@ from services.agent_service import AgentService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/agents", tags=["agents"])
+
+
+class ChatRequest(BaseModel):
+    user_id: str = "guest"
+    intent: str
+    agent_id: str = "personal_assistant"
+    context: dict = {}
+
+
+from api.v1.auth import get_current_user
+from db.models import User
+
+@router.post("/chat")
+async def agent_chat(
+    request_data: ChatRequest, 
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """Chat with an AI agent - processes user intent and returns agent response"""
+    core = request.app.state.buddy_core
+    
+    # If the user is chatting with the personal assistant, use dynamic routing
+    if request_data.agent_id == "personal_assistant" or not request_data.agent_id:
+        result = await core.route_intent(
+            user_id=str(current_user.id),
+            intent=request_data.intent,
+            context=request_data.context or {}
+        )
+        
+        response_text = result.response
+        if isinstance(response_text, dict) and "message" in response_text:
+            response_text = response_text["message"]
+            
+        return {
+            "agent_id": result.agent_id,
+            "response": response_text,
+            "status": result.status,
+            "message": response_text
+        }
+        
+    agent = core.get_agent(request_data.agent_id)
+    
+    if not agent:
+        # Fallback to general AI provider if agent not found
+        response_text = await core.ai_provider.generate_response(
+            system_prompt="You are a helpful AI assistant for Buddy AI OS.",
+            user_prompt=request_data.intent
+        )
+    else:
+        # Call the actual agent
+        response_text = await agent(request_data.intent, request_data.context or {})
+    
+    return {
+        "agent_id": request_data.agent_id,
+        "response": response_text,
+        "status": "success",
+        "message": response_text
+    }
 
 
 @router.get("", response_model=AgentListResponse, status_code=status.HTTP_200_OK)

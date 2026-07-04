@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { apiClient } from '@/lib/api-client';
 
 interface Message {
   id: string;
@@ -11,19 +12,12 @@ interface Message {
   timestamp: Date;
 }
 
-interface Agent {
-  id: string;
-  name: string;
-  description: string;
-}
-
 export default function BuddyChat() {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<string>('personal_assistant');
-  const [agents, setAgents] = useState<Agent[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -34,23 +28,7 @@ export default function BuddyChat() {
     scrollToBottom();
   }, [messages]);
 
-  // Load available agents on mount
   useEffect(() => {
-    const loadAgents = async () => {
-      try {
-        // Fetch agents from API
-        const response = await fetch('/api/agents');
-        if (response.ok) {
-          const data = await response.json();
-          setAgents(data.agents || []);
-        }
-      } catch (error) {
-        console.error('Error loading agents:', error);
-      }
-    };
-
-    loadAgents();
-
     // Welcome message
     setMessages([
       {
@@ -79,24 +57,17 @@ export default function BuddyChat() {
 
     try {
       // Send to Buddy Core API
-      const response = await fetch('/api/v1/intents/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+      const response = await apiClient.post('/api/v1/agents/chat', {
+        user_id: user?.id || 'guest',
+        intent: input,
+        agent_id: selectedAgent,
+        context: {
+          conversation_history: messages.slice(-5).map(m => m.content),
         },
-        body: JSON.stringify({
-          user_id: user?.id || 'guest',
-          intent: input,
-          context: {
-            selected_agent: selectedAgent,
-            conversation_history: messages.slice(-5),
-          },
-        }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.data) {
+        const data = response.data as any;
 
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -105,7 +76,7 @@ export default function BuddyChat() {
           content:
             typeof data.response === 'string'
               ? data.response
-              : JSON.stringify(data.response),
+              : data.message || JSON.stringify(data.response || data),
           timestamp: new Date(),
         };
 
@@ -114,7 +85,7 @@ export default function BuddyChat() {
         const error: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: 'Sorry, I encountered an error processing your request.',
+          content: response.error || 'Sorry, I encountered an error processing your request.',
           timestamp: new Date(),
         };
         setMessages((prev) => [...prev, error]);

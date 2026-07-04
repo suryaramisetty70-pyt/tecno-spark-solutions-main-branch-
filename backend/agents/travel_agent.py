@@ -1,9 +1,9 @@
 """Travel Agent - Trip planning and booking"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class TravelAgentImpl(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="travel_agent", name="Travel Agent", description="Travel planning, bookings, and itinerary management")
         self.name = "Travel Agent"
         self.description = "Travel planning, bookings, and itinerary management"
         self.capabilities = ["search_flights", "book_hotel", "plan_itinerary", "travel_alerts", "currency_exchange"]

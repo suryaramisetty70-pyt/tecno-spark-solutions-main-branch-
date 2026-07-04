@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface Agent {
   id: string;
@@ -13,135 +13,49 @@ interface Agent {
   version: string;
 }
 
-const FEATURED_AGENTS: Agent[] = [
-  {
-    id: 'personal_assistant',
-    name: 'Personal Assistant',
-    description: 'Your AI assistant for general tasks and coordination',
-    category: 'Personal',
-    enabled: true,
-    icon: '🤖',
-    tools: ['coordination', 'task routing', 'general assistance'],
-    version: '0.1.0',
-  },
-  {
-    id: 'memory_agent',
-    name: 'Memory Agent',
-    description: 'Saves and retrieves your memories with semantic search',
-    category: 'Personal',
-    enabled: true,
-    icon: '💾',
-    tools: ['memory save', 'memory retrieve', 'semantic search'],
-    version: '0.1.0',
-  },
-  {
-    id: 'productivity_agent',
-    name: 'Productivity Agent',
-    description: 'Manages tasks, goals, and time blocking',
-    category: 'Productivity',
-    enabled: true,
-    icon: '✓',
-    tools: ['task management', 'time blocking', 'goal tracking'],
-    version: '0.1.0',
-  },
-  {
-    id: 'email_agent',
-    name: 'Email Agent',
-    description: 'Handles email send/receive and thread management',
-    category: 'Communication',
-    enabled: true,
-    icon: '📧',
-    tools: ['email send', 'email receive', 'thread management'],
-    version: '0.1.0',
-  },
-  {
-    id: 'researcher_agent',
-    name: 'Researcher Agent',
-    description: 'Conducts web research and information gathering',
-    category: 'Research',
-    enabled: true,
-    icon: '🔍',
-    tools: ['web research', 'info aggregation', 'source verification'],
-    version: '0.1.0',
-  },
-  {
-    id: 'automation_agent',
-    name: 'Automation Agent',
-    description: 'Creates and manages automated workflows',
-    category: 'Automation',
-    enabled: true,
-    icon: '⚙️',
-    tools: ['workflow creation', 'trigger definition', 'action execution'],
-    version: '0.1.0',
-  },
-  {
-    id: 'student_agent',
-    name: 'Student Agent',
-    description: 'Manages coursework, assignments, and exam preparation',
-    category: 'Education',
-    enabled: false,
-    icon: '📚',
-    tools: ['course tracking', 'assignment tracking', 'exam prep'],
-    version: '0.1.0',
-  },
-  {
-    id: 'sales_agent',
-    name: 'Sales Agent',
-    description: 'Manages leads, deals, and sales pipeline',
-    category: 'Business',
-    enabled: false,
-    icon: '📊',
-    tools: ['lead management', 'deal tracking', 'forecasting'],
-    version: '0.1.0',
-  },
-  {
-    id: 'accountant_agent',
-    name: 'Accountant Agent',
-    description: 'Tracks expenses, invoices, and financial records',
-    category: 'Finance',
-    enabled: false,
-    icon: '💰',
-    tools: ['expense tracking', 'invoicing', 'financial reporting'],
-    version: '0.1.0',
-  },
-  {
-    id: 'whatsapp_agent',
-    name: 'WhatsApp Agent',
-    description: 'Manages WhatsApp messaging and communications',
-    category: 'Communication',
-    enabled: false,
-    icon: '💬',
-    tools: ['message send', 'message receive', 'group management'],
-    version: '0.1.0',
-  },
-  {
-    id: 'booking_agent',
-    name: 'Booking Agent',
-    description: 'Books flights, hotels, and restaurants',
-    category: 'Travel',
-    enabled: false,
-    icon: '✈️',
-    tools: ['flight booking', 'hotel booking', 'restaurant booking'],
-    version: '0.1.0',
-  },
-  {
-    id: 'ceo_agent',
-    name: 'CEO Agent',
-    description: 'Executive dashboard and business intelligence',
-    category: 'Business',
-    enabled: false,
-    icon: '👔',
-    tools: ['KPI tracking', 'business intelligence', 'strategic reporting'],
-    version: '0.1.0',
-  },
-];
 
 const CATEGORIES = ['All', 'Personal', 'Productivity', 'Communication', 'Research', 'Business', 'Finance', 'Education', 'Automation', 'Travel'];
 
 export default function AgentMarketplace() {
-  const [agents, setAgents] = useState<Agent[]>(FEATURED_AGENTS);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Fetch agents from the API
+  React.useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await fetch('/api/v1/agents', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Transform backend data to match frontend Agent interface
+          const formattedAgents: Agent[] = data.agents.map((a: any) => ({
+            id: a.id.toString(),
+            name: a.name,
+            description: a.description || '',
+            category: a.config?.category || 'Business',
+            enabled: a.status === 'active',
+            icon: '🤖', // Default icon
+            tools: a.capabilities ? a.capabilities : [],
+            version: a.version || '1.0.0',
+          }));
+          setAgents(formattedAgents);
+        }
+      } catch (error) {
+        console.error('Error fetching agents:', error);
+      } finally {
+        // isLoading state removed
+      }
+    };
+    
+    fetchAgents();
+  }, []);
 
   const filteredAgents = agents.filter((agent) => {
     const matchesCategory = selectedCategory === 'All' || agent.category === selectedCategory;

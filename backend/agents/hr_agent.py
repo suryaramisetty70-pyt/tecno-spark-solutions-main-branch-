@@ -1,9 +1,9 @@
 """HR Agent - Human resources and employee management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class HRAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="hr_agent", name="HR Agent", description="Human resources and employee management")
         self.name = "HR Agent"
         self.description = "Human resources and employee management"
         self.capabilities = ["manage_employees", "process_payroll", "track_attendance", "manage_benefits", "recruitment"]

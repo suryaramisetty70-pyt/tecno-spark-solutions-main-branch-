@@ -3,7 +3,7 @@ Agent Marketplace API Endpoints
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
-from backend.services.marketplace_service import marketplace_service
+from services.marketplace_service import marketplace_service
 import logging
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,201 @@
+================================================================================
+                    LOGIN CREDENTIALS - QUICK REFERENCE
+                    Email and Password for Logging In
+================================================================================
+
+THERE ARE 2 WAYS TO LOGIN:
+  1. Using Username + Password (Most Common)
+  2. Using Email + Password (Alternative)
+
+Both work! Choose whichever you prefer.
+
+================================================================================
+METHOD 1: LOGIN WITH USERNAME + PASSWORD
+================================================================================
+
+ADMIN ACCOUNT (Full Access - Recommended):
+
+  URL: http://localhost:8000/docs
+  Username: admin
+  Password: Admin@12345
+
+  Steps:
+  1. Go to: http://localhost:8000/docs
+  2. Click "Authorize" button (top right)
+  3. Enter Username: admin
+  4. Enter Password: Admin@12345
+  5. Click "Authorize"
+  6. SUCCESS! You're logged in
+
+
+OTHER USER ACCOUNTS:
+
+  USER ACCOUNT:
+    Username: user
+    Password: User@12345
+
+  DEMO ACCOUNT (Read-Only):
+    Username: demo
+    Password: Demo@12345
+
+================================================================================
+METHOD 2: LOGIN WITH EMAIL + PASSWORD
+================================================================================
+
+ADMIN ACCOUNT (Using Email):
+
+  URL: http://localhost:8000/docs
+  Email: admin@technospark.com
+  Password: Admin@12345
+
+  Steps:
+  1. Go to: http://localhost:8000/docs
+  2. Click "Authorize" button (top right)
+  3. Enter Email: admin@technospark.com
+  4. Enter Password: Admin@12345
+  5. Click "Authorize"
+  6. SUCCESS! You're logged in
+
+
+OTHER USER ACCOUNTS (Email):
+
+  USER ACCOUNT:
+    Email: user@technospark.com
+    Password: User@12345
+
+  DEMO ACCOUNT:
+    Email: demo@technospark.com
+    Password: Demo@12345
+
+================================================================================
+SUMMARY - COPY & PASTE THESE
+================================================================================
+
+ADMIN LOGIN (EASIEST):
+  ┌─────────────────────────────────────┐
+  │ Username: admin                     │
+  │ Password: Admin@12345               │
+  └─────────────────────────────────────┘
+
+OR
+
+  ┌─────────────────────────────────────┐
+  │ Email: admin@technospark.com        │
+  │ Password: Admin@12345               │
+  └─────────────────────────────────────┘
+
+
+USER LOGIN:
+  ┌─────────────────────────────────────┐
+  │ Username: user                      │
+  │ Password: User@12345                │
+  └─────────────────────────────────────┘
+
+OR
+
+  ┌─────────────────────────────────────┐
+  │ Email: user@technospark.com         │
+  │ Password: User@12345                │
+  └─────────────────────────────────────┘
+
+
+DEMO LOGIN (Read-Only):
+  ┌─────────────────────────────────────┐
+  │ Username: demo                      │
+  │ Password: Demo@12345                │
+  └─────────────────────────────────────┘
+
+OR
+
+  ┌─────────────────────────────────────┐
+  │ Email: demo@technospark.com         │
+  │ Password: Demo@12345                │
+  └─────────────────────────────────────┘
+
+================================================================================
+STEP BY STEP LOGIN PROCESS
+================================================================================
+
+STEP 1: Make Sure System is Running
+  ✓ Command Prompt shows: "Uvicorn running on http://127.0.0.1:8000"
+
+STEP 2: Open Browser
+  ✓ Go to: http://localhost:8000/docs
+
+STEP 3: Click Authorize
+  ✓ Look for green "Authorize" button (top right)
+  ✓ Click it
+
+STEP 4: Enter Credentials
+  Option A (Username):
+    - Username field: admin
+    - Password field: Admin@12345
+
+  Option B (Email):
+    - Email field: admin@technospark.com
+    - Password field: Admin@12345
+
+STEP 5: Click Authorize Button
+  ✓ Click the "Authorize" button in the dialog
+
+STEP 6: Success!
+  ✓ Dialog closes
+  ✓ You see "Authorized" message
+  ✓ Now you have access to all 1500+ endpoints
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+PASSWORD HINT:
+  - "Admin@12345" = A (capital) + dmin + @ + 12345
+  - NOT "admin@12345" (lowercase a)
+  - Capital "A" is important!
+
+EMAIL VS USERNAME:
+  - You can use EITHER email OR username to login
+  - Both work the same way
+  - Use whichever you remember
+
+FIRST LOGIN:
+  - After first successful login, system saves your session
+  - For next 15 minutes, you stay logged in
+  - After 15 minutes, need to login again
+
+IF LOGIN FAILS:
+  - Check: Username is "admin" (lowercase)
+  - Check: Password is "Admin@12345" (capital A)
+  - Check: No extra spaces before or after
+  - Try: Refreshing browser page (F5)
+  - Try: Using email instead of username
+
+================================================================================
+QUICK COPY-PASTE CREDENTIALS
+================================================================================
+
+FOR ADMIN (USE THIS):
+
+Username: admin
+Password: Admin@12345
+
+OR
+
+Email: admin@technospark.com
+Password: Admin@12345
+
+================================================================================
+THAT'S IT!
+================================================================================
+
+You now have everything you need to login:
+
+1. System running ✓
+2. Browser at: http://localhost:8000/docs ✓
+3. Username: admin ✓
+4. Password: Admin@12345 ✓
+5. Click Authorize ✓
+6. Logged in! ✓
+
+Go ahead and login now!
+
+================================================================================

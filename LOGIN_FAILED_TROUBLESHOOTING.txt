@@ -1,0 +1,352 @@
+================================================================================
+        LOGIN FAILED / NOT FOUND ERROR - TROUBLESHOOTING GUIDE
+        Step-by-Step Fixes
+================================================================================
+
+ERROR: "Not Found" or "Login Failed"
+CAUSE: Server not properly started or database not initialized
+SOLUTION: Follow these steps to fix it
+
+================================================================================
+STEP 1: STOP EVERYTHING
+================================================================================
+
+1. Look at your Command Prompt window (where you started the server)
+2. If it's running, press: Ctrl+C
+3. Wait for it to stop (shows: "KeyboardInterrupt")
+4. Command prompt returns to: ...backend>
+
+Result: Server is now stopped
+
+================================================================================
+STEP 2: REINITIALIZE THE DATABASE
+================================================================================
+
+In the Command Prompt (in backend folder), type:
+
+python -c "from db.database import init_db; init_db()"
+
+Press: Enter
+
+What happens:
+- System initializes the database
+- You see: "Database initialized successfully" (or similar message)
+- Takes 10-20 seconds
+
+Result: Database is now ready
+
+================================================================================
+STEP 3: START THE SERVER FRESH
+================================================================================
+
+In the Command Prompt, type:
+
+python -m api.main
+
+Press: Enter
+
+What you should see:
+- "Uvicorn running on http://127.0.0.1:8000"
+- OR "Uvicorn running on http://127.0.0.1:3000"
+- Message says: "Press CTRL+C to quit"
+
+Wait 5 seconds for server to fully start
+
+Result: Server is now running fresh
+
+================================================================================
+STEP 4: TRY LOGIN AGAIN - CORRECT URL
+================================================================================
+
+IMPORTANT: Use the CORRECT URL
+
+Option 1: If server running on port 8000
+  URL: http://localhost:8000/docs
+  Click "Authorize"
+  Username: admin
+  Password: Admin@12345
+
+Option 2: If server running on port 3000
+  URL: http://localhost:3000/login
+  Email: admin@technospark.com
+  Password: Admin@12345
+
+(Check Command Prompt to see which port it says)
+
+Result: Should login successfully
+
+================================================================================
+COMMON CAUSES & FIXES
+================================================================================
+
+CAUSE 1: Server Not Running
+  Solution:
+  - Check Command Prompt window
+  - Should show: "Uvicorn running on http://..."
+  - If NOT showing this: Go back to STEP 3 and start server
+
+CAUSE 2: Wrong Port
+  Solution:
+  - Command Prompt shows port 3000 or 8000
+  - Use correct URL:
+    * Port 8000 → http://localhost:8000/docs
+    * Port 3000 → http://localhost:3000/login
+  - Make sure you're using the RIGHT port
+
+CAUSE 3: Wrong Credentials
+  Solution:
+  - Email: admin@technospark.com (exact spelling)
+  - Password: Admin@12345 (capital A!)
+  - Try these EXACT credentials, no spaces
+
+CAUSE 4: Database Not Initialized
+  Solution:
+  - Follow STEP 2 above
+  - Type: python -c "from db.database import init_db; init_db()"
+  - Wait for completion
+  - Restart server
+
+CAUSE 5: Port Already in Use
+  Solution:
+  - Error: "Port 8000 already in use"
+  - Try different port: python -m api.main --port 9000
+  - Then use: http://localhost:9000/docs
+
+CAUSE 6: Browser Cache
+  Solution:
+  - Press: Ctrl+Shift+Delete (clear browser cache)
+  - Or: Ctrl+F5 (hard refresh)
+  - Reload the page
+
+CAUSE 7: Firewall Blocking
+  Solution:
+  - Windows Firewall might block port
+  - Temporarily disable firewall (for testing only)
+  - Or restart computer
+
+================================================================================
+COMPLETE TROUBLESHOOTING CHECKLIST
+================================================================================
+
+Do this ONE by ONE:
+
+[ ] 1. Stop server (Ctrl+C in Command Prompt)
+
+[ ] 2. Initialize database
+      Type: python -c "from db.database import init_db; init_db()"
+      Press: Enter
+
+[ ] 3. Start server fresh
+      Type: python -m api.main
+      Press: Enter
+
+[ ] 4. Check what port is running
+      Look at message in Command Prompt
+      (8000 or 3000?)
+
+[ ] 5. Go to correct URL
+      If port 8000: http://localhost:8000/docs
+      If port 3000: http://localhost:3000/login
+
+[ ] 6. Clear browser cache
+      Press: Ctrl+Shift+Delete
+      Clear all data
+      Close and reopen browser
+
+[ ] 7. Try login with EXACT credentials
+      Email: admin@technospark.com
+      Password: Admin@12345
+      (Check for typos, spaces, case sensitivity)
+
+[ ] 8. If still failing: Try different port
+      Stop server (Ctrl+C)
+      Start: python -m api.main --port 9000
+      Go to: http://localhost:9000/docs
+
+================================================================================
+IF STILL NOT WORKING - COMPLETE RESET
+================================================================================
+
+Do this to completely reset:
+
+STEP 1: Stop Server
+  Press: Ctrl+C in Command Prompt
+
+STEP 2: Delete Database
+  Open File Explorer
+  Go to: backend/data/
+  Find: tecno_spark.db (or similar)
+  Delete it
+
+STEP 3: Reinitialize
+  In Command Prompt, type:
+  python -c "from db.database import init_db; init_db()"
+  Press: Enter
+  Wait for completion
+
+STEP 4: Start Server
+  Type: python -m api.main
+  Press: Enter
+
+STEP 5: Try Login
+  Go to: http://localhost:8000/docs
+  OR: http://localhost:3000/login
+  Email: admin@technospark.com
+  Password: Admin@12345
+
+Result: Should work now
+
+================================================================================
+WHAT TO CHECK IN COMMAND PROMPT
+================================================================================
+
+Look for these messages:
+
+GOOD SIGNS (Server working):
+  ✓ "Uvicorn running on http://127.0.0.1:8000"
+  ✓ "Press CTRL+C to quit"
+  ✓ No error messages
+  ✓ Shows: "INFO:     Application startup complete"
+
+BAD SIGNS (Server not working):
+  ✗ "Error: Port 8000 already in use"
+  ✗ "ModuleNotFoundError"
+  ✗ "Command not found"
+  ✗ No "Uvicorn running" message
+  ✗ Shows red error text
+
+If you see BAD SIGNS:
+  - Stop server (Ctrl+C)
+  - Go back to STEP 2 in troubleshooting
+  - Follow the reset process
+
+================================================================================
+VERIFICATION STEPS
+================================================================================
+
+After starting server, verify it's working:
+
+Step 1: Check Command Prompt
+  Should show: "Uvicorn running on http://127.0.0.1:8000"
+  (or port 3000)
+
+Step 2: Open Browser
+  Go to: http://localhost:8000/docs
+  (or port 3000)
+
+Step 3: Page Should Load
+  You should see:
+  - "Swagger UI" heading
+  - Many blue boxes (API endpoints)
+  - Green "Authorize" button
+
+Step 4: If Page Loads
+  Click "Authorize"
+  Enter: admin / Admin@12345
+  Should work!
+
+Step 5: If Page Doesn't Load
+  Error: "Can't reach server"
+  Solution: Server not running
+  - Go back to STEP 3 in troubleshooting
+
+================================================================================
+EXACT COMMANDS TO RUN
+================================================================================
+
+Copy and paste EXACTLY these commands (one by one):
+
+COMMAND 1: Stop server
+  Ctrl+C
+
+COMMAND 2: Initialize database
+  python -c "from db.database import init_db; init_db()"
+
+COMMAND 3: Start server
+  python -m api.main
+
+COMMAND 4 (if port in use): Start on different port
+  python -m api.main --port 9000
+
+After each command, press: Enter
+
+================================================================================
+QUICK FIX (TRY THIS FIRST)
+================================================================================
+
+If you're getting "Not Found":
+
+1. Stop server: Ctrl+C
+2. Start again: python -m api.main
+3. Wait 10 seconds
+4. Go to: http://localhost:8000/docs
+5. Try login
+
+OR
+
+1. Refresh browser: F5 or Ctrl+F5
+2. Try login again with exact credentials
+3. Email: admin@technospark.com
+4. Password: Admin@12345
+
+================================================================================
+LAST RESORT - COMPLETE RESTART
+================================================================================
+
+If nothing works:
+
+1. Close Command Prompt completely
+2. Close browser completely
+3. Delete the database file (if exists)
+4. Open new Command Prompt
+5. Navigate to backend folder again:
+   cd c:\Users\surya\OneDrive\Desktop\tecno spark solutiomn\backend
+6. Start server: python -m api.main
+7. Open browser fresh: http://localhost:8000/docs
+8. Try login with:
+   Username: admin
+   Password: Admin@12345
+
+================================================================================
+GET HELP
+================================================================================
+
+If you're still stuck, tell me:
+
+1. What error message do you see?
+   (Screenshot if possible)
+
+2. What port is the server running on?
+   (8000 or 3000?)
+
+3. What does Command Prompt show?
+   (Any error messages?)
+
+4. Which URL are you trying?
+   (localhost:8000/docs or localhost:3000/login?)
+
+5. What credentials are you using?
+   (username/email and password)
+
+With this info, I can give you exact fix!
+
+================================================================================
+SUMMARY
+================================================================================
+
+To fix "Not Found" or "Login Failed":
+
+1. Stop server (Ctrl+C)
+2. Initialize database (python -c "from db.database import init_db; init_db()")
+3. Start server fresh (python -m api.main)
+4. Wait 10 seconds
+5. Go to correct URL (http://localhost:8000/docs or localhost:3000/login)
+6. Login with:
+   Email: admin@technospark.com
+   Password: Admin@12345
+
+If still not working:
+- Follow complete reset process above
+- Or tell me the exact error message
+
+================================================================================

@@ -1,9 +1,9 @@
 """Uber Agent - Ride sharing and delivery management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class UberAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="uber_agent", name="Uber Agent", description="Uber rides and delivery coordination")
         self.name = "Uber Agent"
         self.description = "Uber rides and delivery coordination"
         self.capabilities = ["book_ride", "track_delivery", "driver_management", "payment", "ratings"]

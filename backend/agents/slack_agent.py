@@ -1,9 +1,9 @@
 """Slack Agent - Team communication management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class SlackAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="slack_agent", name="Slack Agent", description="Slack messaging and team collaboration")
         self.name = "Slack Agent"
         self.description = "Slack messaging and team collaboration"
         self.capabilities = ["send_message", "create_channel", "schedule_standup", "manage_reminders", "export_data"]

@@ -192,15 +192,23 @@ class Agent(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text)
     version = Column(String(20), default="0.1.0")
-    capabilities = Column(JSON)  # List of capabilities
+    capabilities = Column(String(500))  # Changed to String as per AgentService
     status = Column(String(50), default="active")  # active, inactive, beta
+    enabled_by_default = Column(Boolean, default=False)
+    requires_authentication = Column(Boolean, default=False)
+    author = Column(String(100))
+    documentation_url = Column(String(255))
+    config = Column(JSON, default={})
+    downloads = Column(Integer, default=0)
+    rating = Column(Float, default=0.0)
+    total_reviews = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     registrations = relationship("AgentRegistration", back_populates="agent")
-    instances = relationship("AgentInstance", back_populates="agent")
     tools = relationship("AgentTool", back_populates="agent")
-
+    instances = relationship("AgentInstance", back_populates="agent")
+    metrics = relationship("AgentMetric", back_populates="agent")
 
 class AgentInstance(Base):
     """User-specific agent instances"""
@@ -404,9 +412,7 @@ class WorkflowExecution(Base):
     duration_seconds = Column(Float)
 
     workflow = relationship("Workflow", back_populates="executions")
-
-
-# ==================== NOTIFICATIONS & EVENTS ====================
+    step_executions = relationship("StepExecution", back_populates="execution", cascade="all, delete-orphan")# ==================== NOTIFICATIONS & EVENTS ====================
 
 class Notification(Base):
     """User notifications"""
@@ -472,14 +478,17 @@ class AgentMetric(Base):
     __tablename__ = "agent_metrics"
 
     id = Column(Integer, primary_key=True)
-    agent_id = Column(String(100), nullable=False)
+    agent_id = Column(Integer, ForeignKey("agents.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"))
-    metric_name = Column(String(100), nullable=False)
-    value = Column(Float, nullable=False)
+    execution_time_ms = Column(Float, nullable=False)
+    success = Column(Boolean, default=True)
+    error = Column(String(500), nullable=True)
     timestamp = Column(DateTime, default=datetime.utcnow, index=True)
 
+    agent = relationship("Agent", back_populates="metrics")
+
     __table_args__ = (
-        Index('idx_agent_metric', 'agent_id', 'metric_name'),
+        Index('idx_agent_metric', 'agent_id', 'timestamp'),
     )
 
 
@@ -1015,11 +1024,6 @@ class AgentTool(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     agent = relationship("Agent", back_populates="tools")
-
-
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    workflow = relationship("Workflow", back_populates="triggers")
 
 
 class StepExecution(Base):

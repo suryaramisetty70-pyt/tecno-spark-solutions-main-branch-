@@ -3,7 +3,7 @@ Integration management API endpoints
 """
 
 from fastapi import APIRouter, Depends, status, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession  # type: ignore[import]
 import logging
 
 from api.dependencies.auth_dependencies import get_db_session, get_current_user

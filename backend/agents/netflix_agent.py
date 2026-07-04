@@ -1,9 +1,9 @@
 """Netflix Agent - Content streaming management"""
-from backend.agents.base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 
 class NetflixAgent(BaseAgent):
     def __init__(self):
-        super().__init__()
+        super().__init__(agent_id="netflix_agent", name="Netflix Agent", description="Netflix content and viewing management")
         self.name = "Netflix Agent"
         self.description = "Netflix content and viewing management"
         self.capabilities = ["recommend_content", "manage_watchlist", "download_content", "manage_profile", "account"]

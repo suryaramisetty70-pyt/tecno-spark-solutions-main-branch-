@@ -6,7 +6,7 @@ import logging
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
-from backend.agents.enhanced_base_agent import EnhancedBaseAgent
+from agents.enhanced_base_agent import EnhancedBaseAgent
 
 logger = logging.getLogger(__name__)
 

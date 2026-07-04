@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from db.database import get_db
+from db.database import get_db_session
 from api.schemas.search_schemas import (
     SearchRequest, SearchResponse, SavedSearchRequest, SavedSearchResponse,
     DiscoveryRequest, DiscoveryResponse, SearchSuggestionRequest,
@@ -23,7 +23,7 @@ router = APIRouter(prefix="/api/v1/search", tags=["search"])
 async def global_search(
     search_request: SearchRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Perform global search across all entities"""
     try:
@@ -42,7 +42,7 @@ async def global_search(
 async def advanced_search(
     search_request: AdvancedSearchRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Perform advanced search with complex filters"""
     try:
@@ -58,7 +58,7 @@ async def advanced_search(
 async def save_search(
     save_request: SavedSearchRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Save search for later"""
     try:
@@ -73,7 +73,7 @@ async def get_saved_searches(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get user's saved searches"""
     try:
@@ -87,7 +87,7 @@ async def get_saved_searches(
 async def delete_saved_search(
     search_id: int,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Delete saved search"""
     try:
@@ -104,7 +104,7 @@ async def delete_saved_search(
 async def get_suggestions(
     suggestion_request: SearchSuggestionRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get search suggestions"""
     try:
@@ -122,7 +122,7 @@ async def get_suggestions(
 async def get_discoveries(
     discovery_request: DiscoveryRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get discovery recommendations"""
     try:
@@ -139,7 +139,7 @@ async def get_discoveries(
 async def get_search_history(
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get search history"""
     try:
@@ -153,7 +153,7 @@ async def get_search_history(
 async def get_trending_searches(
     limit: int = Query(10, ge=1, le=50),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get trending searches"""
     try:
@@ -166,7 +166,7 @@ async def get_trending_searches(
 @router.get("/analytics", response_model=SearchAnalyticsResponse)
 async def get_search_analytics(
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get search analytics"""
     try:
@@ -180,7 +180,7 @@ async def get_search_analytics(
 async def get_popular_searches(
     limit: int = Query(10, ge=1, le=50),
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db_session)
 ):
     """Get most popular searches"""
     try:
