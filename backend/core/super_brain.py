@@ -1,154 +1,233 @@
+"""
+Omni-MNC Super Brain v2.0
+==========================
+The Central AI Routing Engine for the Omni-MNC.
+Now powered by:
+  - Claw Engine (Claude Code internals) for smart routing & memory
+  - Multi-provider Fallback Chain (5 AI providers)
+  - Semantic JSON intent detection
+  - Full session history & memory
+"""
+
 import os
-from typing import List, Dict, Any
+import sys
+import json
 import random
+import requests
+from typing import List, Dict, Any
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# ─── Claw Engine Integration ───────────────────────────────────────────────────
+CLAW_ENGINE_PATH = os.path.join(os.path.dirname(__file__), "claw_engine")
+if CLAW_ENGINE_PATH not in sys.path:
+    sys.path.insert(0, CLAW_ENGINE_PATH)
+
+try:
+    from src.runtime import PortRuntime
+    from src.history import HistoryLog
+    from src.session_store import load_session
+    CLAW_AVAILABLE = True
+except Exception as e:
+    CLAW_AVAILABLE = False
+    print(f"[Super Brain] Claw Engine not loaded: {e}")
+
+# ─── Provider Definitions ──────────────────────────────────────────────────────
+PROVIDERS = {
+    "groq": {
+        "key_env": "GROQ_API_KEY",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "model": "llama3-8b-8192",
+    },
+    "openrouter": {
+        "key_env": "OPENROUTER_API_KEY",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "model": "google/gemma-4-31b-it:free",
+    },
+    "mistral": {
+        "key_env": "MISTRAL_API_KEY",
+        "url": "https://api.mistral.ai/v1/chat/completions",
+        "model": "mistral-small-latest",
+    },
+    "cohere": {
+        "key_env": "COHERE_API_KEY",
+        "url": None,  # Uses cohere SDK
+        "model": "command-r",
+    },
+    "together": {
+        "key_env": "TOGETHER_API_KEY",
+        "url": "https://api.together.xyz/v1/chat/completions",
+        "model": "meta-llama/Llama-3-8b-chat-hf",
+    },
+}
+
+
 class SuperBrain:
     """
-    The Central AI Routing Engine for the Omni-MNC.
-    Combines 15+ Free AI providers into a single 'Super Brain' to power 1,040 agents.
+    The Omni-MNC Super Brain v2.0
+    - Multi-provider Fallback Chain (never goes offline)
+    - Claw Engine routing & memory
+    - Semantic JSON intent detection
+    - Full conversation history
     """
+
     def __init__(self):
-        # Load the newly provided API Keys
+        # Load all API keys
         self.api_keys = {
-            "OpenRouter": os.getenv("OPENROUTER_API_KEY"),
-            "Cohere": os.getenv("COHERE_API_KEY"),
-            "NVIDIA": os.getenv("NVIDIA_API_KEY"),
-            "Together AI": os.getenv("TOGETHER_API_KEY")
+            name: os.getenv(cfg["key_env"])
+            for name, cfg in PROVIDERS.items()
         }
-        
-        # Only enable providers that have active keys
-        self.active_providers = [
-            name for name, key in self.api_keys.items() if key is not None
+
+        # Build ordered fallback chain (skip providers with no key)
+        self.fallback_chain = [
+            name for name in ["groq", "openrouter", "mistral", "together", "cohere"]
+            if self.api_keys.get(name)
         ]
 
-        
-    def _route_request(self, intent: str, tier: str) -> str:
-        """Dynamically picks the best brain based on the agent's tier and task complexity."""
-        if tier == "SUPER":
-            return "Google AI Studio (Gemini 2.5 Pro)" # Heavy lifting for C-Suite
-        elif tier == "SECTOR" and "fast" in intent.lower():
-            return "Groq (Llama 3.3)" # Speed for PAs
-        else:
-            # Distribute load randomly across the other free APIs for the 1,000 employees
-            if self.active_providers:
-                return random.choice(self.active_providers)
-            return "OpenRouter (Fallback)"
+        print(f"[Super Brain] ✅ Active providers: {self.fallback_chain}")
 
-    def _call_openrouter(self, prompt: str) -> str:
-        if not self.api_keys.get("OpenRouter"):
-            return self._generate_simulated_response(prompt)
-            
-        import requests
+        # Claw Engine for smart routing & memory
+        if CLAW_AVAILABLE:
+            self.claw_runtime = PortRuntime()
+            self.history = HistoryLog()
+            print("[Super Brain] ✅ Claw Engine routing & memory active.")
+        else:
+            self.claw_runtime = None
+            self.history = None
+
+    # ─── Core Fallback Chain ───────────────────────────────────────────────────
+
+    def _call_provider(self, provider: str, prompt: str) -> str:
+        """Call a single provider. Returns response text or raises Exception."""
+        cfg = PROVIDERS[provider]
+        key = self.api_keys.get(provider)
+        if not key:
+            raise ValueError(f"No key for {provider}")
+
+        if provider == "cohere":
+            import cohere
+            co = cohere.Client(key)
+            resp = co.chat(message=prompt, model=cfg["model"])
+            return resp.text
+
         headers = {
-            "Authorization": f"Bearer {self.api_keys['OpenRouter']}",
+            "Authorization": f"Bearer {key}",
             "Content-Type": "application/json"
         }
         data = {
-            "model": "google/gemma-4-31b-it:free",
+            "model": cfg["model"],
             "messages": [{"role": "user", "content": prompt}]
         }
-        try:
-            resp = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
-            if resp.status_code == 200:
-                return resp.json()["choices"][0]["message"]["content"]
-            else:
-                return f"[API ERROR]: The OpenRouter API rejected the request. Code {resp.status_code}. Details: {resp.text}"
-        except Exception as e:
-            return f"[SYSTEM ERROR]: Failed to connect to OpenRouter. Details: {str(e)}"
+        resp = requests.post(cfg["url"], headers=headers, json=data, timeout=30)
+        if resp.status_code == 200:
+            return resp.json()["choices"][0]["message"]["content"]
+        raise Exception(f"HTTP {resp.status_code}: {resp.text[:200]}")
 
-    def _call_together(self, prompt: str) -> str:
-        if not self.api_keys.get("Together AI"):
-            return self._generate_simulated_response(prompt)
-            
-        import requests
-        headers = {
-            "Authorization": f"Bearer {self.api_keys['Together AI']}",
-            "Content-Type": "application/json"
-        }
-        data = {
-            "model": "meta-llama/Llama-3-8b-chat-hf",
-            "messages": [{"role": "user", "content": prompt}]
-        }
-        try:
-            resp = requests.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=data)
-            if resp.status_code == 200:
-                return resp.json()["choices"][0]["message"]["content"]
-            else:
-                return self._generate_simulated_response(prompt)
-        except Exception:
-            return self._generate_simulated_response(prompt)
-            
-    def _generate_simulated_response(self, prompt: str) -> str:
-        """Fallback for invalid or rate-limited free API keys during training."""
-        if "FastAPI" in prompt:
-            return "Netflix's architecture relies on asynchronous event loops and microservices. To optimize FastAPI for high concurrency, utilize `async def` for I/O bound routes to prevent blocking the event loop. Combine this with ASGI servers like Uvicorn running multiple worker processes. Finally, implement Redis caching for frequent queries, mirroring Netflix's decentralized edge-caching strategy."
-        elif "liquidity" in prompt:
-            return "From a JP Morgan risk management perspective, liquidity risk is the imminent danger that a financial institution will be unable to meet its short-term debt obligations due to an inability to quickly convert assets into cash without taking a significant loss. Even if a firm is technically solvent on paper, a sudden market shock can freeze capital markets, forcing a fire sale of assets that triggers a rapid insolvency cascade."
-        elif "NDA" in prompt:
-            return "The Receiving Party shall hold all Confidential Information in strict confidence and shall not disclose it to any third party. Furthermore, the Receiving Party agrees to use such Confidential Information solely for the purpose of evaluating the proposed business relationship."
-        return "Task processed successfully in training environment."
+    def think(self, prompt: str) -> Dict[str, Any]:
+        """
+        The MAIN method. Runs the Fallback Chain.
+        Tries each provider in order until one succeeds.
+        """
+        # Use Claw Engine routing if available
+        claw_context = ""
+        if self.claw_runtime:
+            try:
+                matches = self.claw_runtime.route_prompt(prompt, limit=3)
+                if matches:
+                    claw_context = f"\n[Claw Route: {', '.join(m.name for m in matches)}]"
+            except Exception:
+                pass
 
-    def ask(self, intent: str, context: Dict[str, Any], agent_tier: str) -> Dict[str, Any]:
-        """Single Model Request with TRUE API routing"""
-        selected_brain = self._route_request(intent, agent_tier)
-        
-        # Route to actual API
-        if "OpenRouter" in selected_brain:
-            actual_response = self._call_openrouter(intent)
-        elif "Together" in selected_brain:
-            actual_response = self._call_together(intent)
-        else:
-            # Fallback to OpenRouter for any missing custom integrations
-            actual_response = self._call_openrouter(intent)
-            
+        last_error = None
+        for provider in self.fallback_chain:
+            try:
+                print(f"[Super Brain] Trying provider: {provider}")
+                response = self._call_provider(provider, prompt)
+
+                # Log to Claw history
+                if self.history:
+                    self.history.add("think", f"provider={provider} prompt={prompt[:50]!r}")
+
+                return {
+                    "status": "success",
+                    "provider": provider,
+                    "response": response + claw_context,
+                }
+            except Exception as e:
+                print(f"[Super Brain] {provider} failed: {e}")
+                last_error = str(e)
+                continue
+
+        # All providers failed
         return {
-            "status": "success",
-            "brain_used": selected_brain,
-            "response": actual_response
+            "status": "error",
+            "provider": "none",
+            "response": f"[Super Brain] All {len(self.fallback_chain)} providers failed. Last error: {last_error}. Please add a valid API key.",
         }
+
+    # ─── Intent Detection ──────────────────────────────────────────────────────
 
     def get_intent(self, directive: str) -> dict:
         """
-        Uses semantic LLM analysis to determine the user's intent.
-        Returns a structured dictionary instead of just text.
+        Semantic JSON intent detection using the Fallback Chain.
+        Returns structured intent: CAMPAIGN, RESEARCH, CODE, CHAT
         """
-        prompt = f"""
-        Analyze the following directive and extract the intent and target entity.
-        Return ONLY a valid JSON object with no markdown formatting.
-        Possible intents: CAMPAIGN, RESEARCH, CHAT.
-        Format: {{"INTENT": "...", "ENTITY": "..."}}
-        Directive: "{directive}"
-        """
+        prompt = f"""Analyze the following directive and extract the intent.
+Return ONLY a valid JSON object. No markdown, no explanation.
+Possible intents: CAMPAIGN, RESEARCH, CODE, CHAT.
+Format: {{"INTENT": "...", "ENTITY": "..."}}
+Directive: "{directive}" """
+
+        result = self.think(prompt)
         try:
-            raw_response = self._call_openrouter(prompt)
-            clean_json = raw_response.replace("```json", "").replace("```", "").strip()
-            import json
-            return json.loads(clean_json)
+            clean = result["response"].replace("```json", "").replace("```", "").strip()
+            return json.loads(clean)
         except Exception:
-            directive_lower = directive.lower()
-            if "poster" in directive_lower or "campaign" in directive_lower or "promotion" in directive_lower:
+            # Smart keyword fallback
+            d = directive.lower()
+            if any(w in d for w in ["poster", "campaign", "ad", "promotion"]):
                 return {"INTENT": "CAMPAIGN", "ENTITY": directive}
-            return {"INTENT": "CHAT", "ENTITY": "None"}
+            if any(w in d for w in ["research", "analyze", "find", "search"]):
+                return {"INTENT": "RESEARCH", "ENTITY": directive}
+            if any(w in d for w in ["code", "script", "build", "write", "create"]):
+                return {"INTENT": "CODE", "ENTITY": directive}
+            return {"INTENT": "CHAT", "ENTITY": "general"}
+
+    # ─── Legacy compatibility ──────────────────────────────────────────────────
+
+    def ask(self, intent: str, context: Dict[str, Any], agent_tier: str) -> Dict[str, Any]:
+        """Legacy method for backward compatibility."""
+        return self.think(intent)
 
     def consensus_ask(self, intent: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
-        SUPER INTELLIGENCE MODE:
-        Asks 3 different free models the exact same question and merges their answers.
-        Guarantees zero mistakes.
+        Ask multiple providers and return all responses.
+        Best for critical decisions requiring accuracy.
         """
-        brain_1 = "Google AI Studio (Gemini)"
-        brain_2 = "xAI (Grok)"
-        brain_3 = "OpenRouter (DeepSeek)"
-        
+        responses = []
+        for provider in self.fallback_chain[:3]:
+            try:
+                text = self._call_provider(provider, intent)
+                responses.append({"provider": provider, "response": text})
+            except Exception as e:
+                responses.append({"provider": provider, "error": str(e)})
+
         return {
             "status": "success",
-            "mode": "CONSENSUS_SUPER_INTELLIGENCE",
-            "brains_used": [brain_1, brain_2, brain_3],
-            "response": f"Synthesized absolute truth from {brain_1}, {brain_2}, and {brain_3} regarding '{intent}'."
+            "mode": "CONSENSUS",
+            "providers_used": len(responses),
+            "responses": responses,
         }
 
-# Global Singleton instance of the Super Brain to prevent RAM overload
+    def get_status(self) -> Dict[str, Any]:
+        """Returns the current health status of the Super Brain."""
+        return {
+            "active_providers": self.fallback_chain,
+            "claw_engine": CLAW_AVAILABLE,
+            "total_providers_configured": len([k for k in self.api_keys.values() if k]),
+        }
+
+
+# ─── Global Singleton ──────────────────────────────────────────────────────────
 GLOBAL_SUPER_BRAIN = SuperBrain()
