@@ -38,7 +38,7 @@ PROVIDERS = {
     "groq": {
         "key_env": "GROQ_API_KEY",
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        "model": "llama3-8b-8192",
+        "model": "llama-3.1-8b-instant",
     },
     "openrouter": {
         "key_env": "OPENROUTER_API_KEY",
@@ -60,6 +60,31 @@ PROVIDERS = {
         "url": "https://api.together.xyz/v1/chat/completions",
         "model": "meta-llama/Llama-3-8b-chat-hf",
     },
+}
+
+
+# ─── Agent Specialization Models ──────────────────────────────────────────────
+AGENT_MODELS = {
+    "Super Brain": ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"),
+    "Campaign Manager": ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"),
+    "Chief Architect": ("openrouter", "qwen/qwen-2.5-coder-32b-instruct:free"),
+    "Coder Agent": ("openrouter", "qwen/qwen-2.5-coder-32b-instruct:free"),
+    "QA Agent": ("openrouter", "qwen/qwen-2.5-coder-32b-instruct:free"),
+    "DevOps Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Security Agent": ("groq", "llama-3.1-8b-instant"),
+    "Research Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Copywriter Agent": ("openrouter", "google/gemma-4-31b-it:free"),
+    "Art Director Agent": ("openrouter", "google/gemma-4-31b-it:free"),
+    "Graphic Engine Agent": ("groq", "llama-3.1-8b-instant"),
+    "Social Media Agent": ("openrouter", "google/gemma-4-31b-it:free"),
+    "Email Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Calendar Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Comms Agent": ("groq", "llama-3.1-8b-instant"),
+    "Finance Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Legal Agent": ("openrouter", "meta-llama/llama-3.3-70b-instruct:free"),
+    "Memory Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Retrieval Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
+    "Analytics Agent": ("openrouter", "meta-llama/llama-3-8b-instruct:free"),
 }
 
 
@@ -85,30 +110,32 @@ class SuperBrain:
             if self.api_keys.get(name)
         ]
 
-        print(f"[Super Brain] ✅ Active providers: {self.fallback_chain}")
+        print(f"[Super Brain] ACTIVE providers: {self.fallback_chain}")
 
         # Claw Engine for smart routing & memory
         if CLAW_AVAILABLE:
             self.claw_runtime = PortRuntime()
             self.history = HistoryLog()
-            print("[Super Brain] ✅ Claw Engine routing & memory active.")
+            print("[Super Brain] Claw Engine routing & memory active.")
         else:
             self.claw_runtime = None
             self.history = None
 
     # ─── Core Fallback Chain ───────────────────────────────────────────────────
 
-    def _call_provider(self, provider: str, prompt: str) -> str:
+    def _call_provider(self, provider: str, prompt: str, model_override: str = None) -> str:
         """Call a single provider. Returns response text or raises Exception."""
         cfg = PROVIDERS[provider]
         key = self.api_keys.get(provider)
         if not key:
             raise ValueError(f"No key for {provider}")
 
+        model = model_override if model_override else cfg["model"]
+
         if provider == "cohere":
             import cohere
             co = cohere.Client(key)
-            resp = co.chat(message=prompt, model=cfg["model"])
+            resp = co.chat(message=prompt, model=model)
             return resp.text
 
         headers = {
@@ -116,7 +143,7 @@ class SuperBrain:
             "Content-Type": "application/json"
         }
         data = {
-            "model": cfg["model"],
+            "model": model,
             "messages": [{"role": "user", "content": prompt}]
         }
         resp = requests.post(cfg["url"], headers=headers, json=data, timeout=30)
@@ -124,11 +151,18 @@ class SuperBrain:
             return resp.json()["choices"][0]["message"]["content"]
         raise Exception(f"HTTP {resp.status_code}: {resp.text[:200]}")
 
-    def think(self, prompt: str) -> Dict[str, Any]:
+    def think(self, prompt: str, agent_name: str = None) -> Dict[str, Any]:
         """
         The MAIN method. Runs the Fallback Chain.
         Tries each provider in order until one succeeds.
+        If agent_name is specified, attempts their customized agent model first.
         """
+        # Determine initial provider and model based on agent_name
+        initial_provider = None
+        initial_model = None
+        if agent_name and agent_name in AGENT_MODELS:
+            initial_provider, initial_model = AGENT_MODELS[agent_name]
+
         # Use Claw Engine routing if available
         claw_context = ""
         if self.claw_runtime:
@@ -139,8 +173,28 @@ class SuperBrain:
             except Exception:
                 pass
 
+        # 1. Try agent's primary custom model first
+        if initial_provider and self.api_keys.get(initial_provider):
+            try:
+                print(f"[Super Brain] Trying custom agent model for {agent_name}: {initial_provider} ({initial_model})")
+                response = self._call_provider(initial_provider, prompt, model_override=initial_model)
+                if self.history:
+                    self.history.add("think", f"agent={agent_name} provider={initial_provider} model={initial_model} prompt={prompt[:50]!r}")
+                return {
+                    "status": "success",
+                    "provider": initial_provider,
+                    "model": initial_model,
+                    "response": response + claw_context,
+                }
+            except Exception as e:
+                print(f"[Super Brain] Custom agent model failed: {e}. Falling back to default chain.")
+
+        # 2. Fall back to standard fallback chain
         last_error = None
         for provider in self.fallback_chain:
+            # Skip if we already tried this provider as the initial_provider
+            if provider == initial_provider:
+                continue
             try:
                 print(f"[Super Brain] Trying provider: {provider}")
                 response = self._call_provider(provider, prompt)
@@ -152,6 +206,7 @@ class SuperBrain:
                 return {
                     "status": "success",
                     "provider": provider,
+                    "model": PROVIDERS[provider]["model"],
                     "response": response + claw_context,
                 }
             except Exception as e:
@@ -163,7 +218,8 @@ class SuperBrain:
         return {
             "status": "error",
             "provider": "none",
-            "response": f"[Super Brain] All {len(self.fallback_chain)} providers failed. Last error: {last_error}. Please add a valid API key.",
+            "model": "none",
+            "response": f"[Super Brain] All configured providers failed. Last error: {last_error}. Please add a valid API key.",
         }
 
     # ─── Intent Detection ──────────────────────────────────────────────────────
@@ -179,7 +235,7 @@ Possible intents: CAMPAIGN, RESEARCH, CODE, CHAT.
 Format: {{"INTENT": "...", "ENTITY": "..."}}
 Directive: "{directive}" """
 
-        result = self.think(prompt)
+        result = self.think(prompt, agent_name="Super Brain")
         try:
             clean = result["response"].replace("```json", "").replace("```", "").strip()
             return json.loads(clean)
